@@ -1,4 +1,6 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+
+},{}],2:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -150,9 +152,9 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],2:[function(require,module,exports){
-
 },{}],3:[function(require,module,exports){
+arguments[4][1][0].apply(exports,arguments)
+},{"dup":1}],4:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -1933,7 +1935,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":1,"buffer":3,"ieee754":5}],4:[function(require,module,exports){
+},{"base64-js":2,"buffer":4,"ieee754":6}],5:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2411,7 +2413,7 @@ function once(emitter, name) {
   });
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -2498,7 +2500,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2527,7 +2529,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -2550,7 +2552,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -2736,7 +2738,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
@@ -2803,7 +2805,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":3}],10:[function(require,module,exports){
+},{"buffer":4}],11:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2934,7 +2936,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":4,"inherits":6,"readable-stream/lib/_stream_duplex.js":12,"readable-stream/lib/_stream_passthrough.js":13,"readable-stream/lib/_stream_readable.js":14,"readable-stream/lib/_stream_transform.js":15,"readable-stream/lib/_stream_writable.js":16,"readable-stream/lib/internal/streams/end-of-stream.js":20,"readable-stream/lib/internal/streams/pipeline.js":22}],11:[function(require,module,exports){
+},{"events":5,"inherits":7,"readable-stream/lib/_stream_duplex.js":13,"readable-stream/lib/_stream_passthrough.js":14,"readable-stream/lib/_stream_readable.js":15,"readable-stream/lib/_stream_transform.js":16,"readable-stream/lib/_stream_writable.js":17,"readable-stream/lib/internal/streams/end-of-stream.js":21,"readable-stream/lib/internal/streams/pipeline.js":23}],12:[function(require,module,exports){
 'use strict';
 
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
@@ -3063,7 +3065,7 @@ createErrorType('ERR_UNKNOWN_ENCODING', function (arg) {
 createErrorType('ERR_STREAM_UNSHIFT_AFTER_END_EVENT', 'stream.unshift() after end event');
 module.exports.codes = codes;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function (process){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3205,7 +3207,7 @@ Object.defineProperty(Duplex.prototype, 'destroyed', {
   }
 });
 }).call(this)}).call(this,require('_process'))
-},{"./_stream_readable":14,"./_stream_writable":16,"_process":8,"inherits":6}],13:[function(require,module,exports){
+},{"./_stream_readable":15,"./_stream_writable":17,"_process":9,"inherits":7}],14:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -3245,7 +3247,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":15,"inherits":6}],14:[function(require,module,exports){
+},{"./_stream_transform":16,"inherits":7}],15:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4372,7 +4374,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../errors":11,"./_stream_duplex":12,"./internal/streams/async_iterator":17,"./internal/streams/buffer_list":18,"./internal/streams/destroy":19,"./internal/streams/from":21,"./internal/streams/state":23,"./internal/streams/stream":24,"_process":8,"buffer":3,"events":4,"inherits":6,"string_decoder/":25,"util":2}],15:[function(require,module,exports){
+},{"../errors":12,"./_stream_duplex":13,"./internal/streams/async_iterator":18,"./internal/streams/buffer_list":19,"./internal/streams/destroy":20,"./internal/streams/from":22,"./internal/streams/state":24,"./internal/streams/stream":25,"_process":9,"buffer":4,"events":5,"inherits":7,"string_decoder/":26,"util":3}],16:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4574,7 +4576,7 @@ function done(stream, er, data) {
   if (stream._transformState.transforming) throw new ERR_TRANSFORM_ALREADY_TRANSFORMING();
   return stream.push(null);
 }
-},{"../errors":11,"./_stream_duplex":12,"inherits":6}],16:[function(require,module,exports){
+},{"../errors":12,"./_stream_duplex":13,"inherits":7}],17:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -5274,7 +5276,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../errors":11,"./_stream_duplex":12,"./internal/streams/destroy":19,"./internal/streams/state":23,"./internal/streams/stream":24,"_process":8,"buffer":3,"inherits":6,"util-deprecate":26}],17:[function(require,module,exports){
+},{"../errors":12,"./_stream_duplex":13,"./internal/streams/destroy":20,"./internal/streams/state":24,"./internal/streams/stream":25,"_process":9,"buffer":4,"inherits":7,"util-deprecate":27}],18:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -5484,7 +5486,7 @@ var createReadableStreamAsyncIterator = function createReadableStreamAsyncIterat
 
 module.exports = createReadableStreamAsyncIterator;
 }).call(this)}).call(this,require('_process'))
-},{"./end-of-stream":20,"_process":8}],18:[function(require,module,exports){
+},{"./end-of-stream":21,"_process":9}],19:[function(require,module,exports){
 'use strict';
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
@@ -5695,7 +5697,7 @@ function () {
 
   return BufferList;
 }();
-},{"buffer":3,"util":2}],19:[function(require,module,exports){
+},{"buffer":4,"util":3}],20:[function(require,module,exports){
 (function (process){(function (){
 'use strict'; // undocumented cb() API, needed for core, not for public API
 
@@ -5803,7 +5805,7 @@ module.exports = {
   errorOrDestroy: errorOrDestroy
 };
 }).call(this)}).call(this,require('_process'))
-},{"_process":8}],20:[function(require,module,exports){
+},{"_process":9}],21:[function(require,module,exports){
 // Ported from https://github.com/mafintosh/end-of-stream with
 // permission from the author, Mathias Buus (@mafintosh).
 'use strict';
@@ -5908,12 +5910,12 @@ function eos(stream, opts, callback) {
 }
 
 module.exports = eos;
-},{"../../../errors":11}],21:[function(require,module,exports){
+},{"../../../errors":12}],22:[function(require,module,exports){
 module.exports = function () {
   throw new Error('Readable.from is not available in the browser')
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 // Ported from https://github.com/mafintosh/pump with
 // permission from the author, Mathias Buus (@mafintosh).
 'use strict';
@@ -6011,7 +6013,7 @@ function pipeline() {
 }
 
 module.exports = pipeline;
-},{"../../../errors":11,"./end-of-stream":20}],23:[function(require,module,exports){
+},{"../../../errors":12,"./end-of-stream":21}],24:[function(require,module,exports){
 'use strict';
 
 var ERR_INVALID_OPT_VALUE = require('../../../errors').codes.ERR_INVALID_OPT_VALUE;
@@ -6039,10 +6041,10 @@ function getHighWaterMark(state, options, duplexKey, isDuplex) {
 module.exports = {
   getHighWaterMark: getHighWaterMark
 };
-},{"../../../errors":11}],24:[function(require,module,exports){
+},{"../../../errors":12}],25:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":4}],25:[function(require,module,exports){
+},{"events":5}],26:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -6339,7 +6341,7 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":9}],26:[function(require,module,exports){
+},{"safe-buffer":10}],27:[function(require,module,exports){
 (function (global){(function (){
 
 /**
@@ -6410,26 +6412,1182 @@ function config (name) {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 const JsonLdParser = require("jsonld-streaming-parser").JsonLdParser;
+const fs = require("fs");
+
+var boxesId=[];
+var boxes=[];
+var foundID = false;
+
+class LiveTimer extends HTMLElement {
+
+    render() {
+      this.innerHTML = `
+      <time-formatted hour="numeric" minute="numeric" second="numeric">
+      </time-formatted>
+      `;
+  
+      this.timerElem = this.firstElementChild;
+    }
+  
+    connectedCallback() { // (2)
+      if (!this.rendered) {
+        this.render();
+        this.rendered = true;
+      }
+      this.timer = setInterval(() => this.update(), 1000);
+    }
+  
+    update() {
+      this.date = new Date();
+      this.timerElem.setAttribute('datetime', this.date);
+      this.dispatchEvent(new CustomEvent('tick', { detail: this.date }));
+    }
+  
+    disconnectedCallback() {
+      clearInterval(this.timer); // important to let the element be garbage-collected
+    }
+  
+  }
+  
+  customElements.define("live-timer", LiveTimer);
+
+
+/*var box={
+    id: "",
+    backgroundColor: "",
+    posX: "",
+    posY: "",
+    widht: "",
+    height: "",
+    belongsTo:"",
+    color:"",
+    documentOrder:"",
+    fontFamily:"",
+    fontSize:"",
+    fontStyle:"",
+    fontWeight:"",
+    hasAttribute:"",
+    htmlTagName:"",
+    lineThrough:"",
+    underline:"",
+    visualHeight:"",
+    visualWidth:"",
+    visualX:"",
+    visualY:"",
+    type:""
+}*/
+
+function main(){
+     console.log(boxes);
+
+}
+
+function saveObject(data){
+    var object = data.object.value;
+    var lastIndexO = object.lastIndexOf('#')+1;
+    var value = object.substr(lastIndexO,object.lenght);
+
+    var subject = data.subject.value;
+    var lastIndexS = subject.lastIndexOf('/')+1;
+    var id = subject.substr(lastIndexS,subject.lenght);
+    if(value== "Box"){
+        boxesId.push(id);
+    }
+
+    var predicate = data.predicate.value;
+    var lastIndexP = predicate.lastIndexOf('#')+1;
+    var type = predicate.substr(lastIndexP,predicate.lenght);
+        for(var i = 0; i<boxes.length;i++){
+            if(id==boxes[i].id){
+                foundID = true;
+
+                switch (type) {
+                    case "backgroundColor":
+                        boxes[i].backgroundColor = value;                  
+                        break;
+
+                    case "positionX":
+                        boxes[i].posX = value;                      
+                        break;
+
+                    case "positionY":
+                        boxes[i].posY = value;
+                        break;
+
+                    case "width":
+                        boxes[i].widht = value; 
+                        break;
+
+                    case "height":
+                        boxes[i].height = value;
+                        break;
+
+                    case "belongsTo":
+                        boxes[i].belongsTo = value;
+                        break;
+                    
+                    case "color":
+                        boxes[i].color = value;
+                        break;
+                    
+                    case "documentOrder":
+                        boxes[i].documentOrder = value;
+                        break;    
+                    
+                    case "fontFamily":
+                        boxes[i].fontFamily = value;
+                        break;
+
+                    case "fontSize":
+                        boxes[i].fontSize = value;
+                        break;
+
+                    case "fontStyle":
+                        boxes[i].fontStyle = value;
+                        break;
+
+                    case "fontWeight":
+                        boxes[i].fontWeight = value;
+                        break;
+
+                    case "hasAttribute":
+                        boxes[i].hasAttribute = value;
+                        break;
+
+                    case "htmlTagName":
+                        boxes[i].htmlTagName = value;
+                        break;
+                    
+                    case "lineTrough":
+                        boxes[i].lineTrough = value;
+                        break;
+
+                    case "underLine":
+                        boxes[i].underLine = value;
+                        break;
+
+                    case "visualHeight":
+                        boxes[i].visualHeight = value;
+                        break;
+
+                    case "visualWidth":
+                        boxes[i].visualWidth = value;
+                        break;
+
+                    case "visualX":
+                        boxes[i].visualX = value;
+                        break;
+
+                    case "visualY":
+                        boxes[i].visualY = value;
+                        break;
+
+                    case "type":
+                        boxes[i].type = value;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+        if(foundID == false){
+            var O ={id: id};
+                boxes.push(O);
+        }
+
+        foundID = false;
+}
+
 
 const myParser = new JsonLdParser();
 
 myParser
-  .on('data', console.log)
+  .on('data', saveObject)
   .on('error', console.error)
-  .on('end', () => console.log('All triples were parsed!'));
+  .on('end', main);
 
-myParser.write('{');
-myParser.write(`"@context": "https://schema.org/",`);
-myParser.write(`"@type": "Recipe",`);
-myParser.write(`"name": "Grandma's Holiday Apple Pie",`);
-myParser.write(`"aggregateRating": {`);
-myParser.write(`"@type": "AggregateRating",`);
-myParser.write(`"ratingValue": "4"`);
-myParser.write(`}}`);
+
+myParser.write(`{
+  "@graph": [
+      {
+          "@id": "r:art4",
+          "@type": "b:Page",
+          "b:hasTitle": "CSSBox - Java HTML rendering engine",
+          "b:launchDatetime": {
+              "@type": "xsd:dateTime",
+              "@value": "2020-10-16T09:14:13.840+02:00"
+          },
+          "b:sourceUrl": "http://cssbox.sf.net"
+      },
+      {
+          "@id": "r:art4#0",
+          "@type": "b:Box",
+          "b:backgroundColor": "#fafafa",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#000000",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "0"
+          },
+          "b:fontFamily": "Serif",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "12.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasAttribute": [
+              {
+                  "@id": "r:art4#0-attr-class"
+              },
+              {
+                  "@id": "r:art4#0-attr-style"
+              }
+          ],
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "878"
+          },
+          "b:htmlTagName": "xdiv",
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "0"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "0"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "878"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "1200"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "0"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "0"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "1200"
+          }
+      },
+      {
+          "@id": "r:art4#0-attr-class",
+          "rdf:value": "Xanonymous",
+          "rdfs:label": "class"
+      },
+      {
+          "@id": "r:art4#0-attr-style",
+          "rdf:value": "display:block",
+          "rdfs:label": "style"
+      },
+      {
+          "@id": "r:art4#1",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#000000",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "1"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "863"
+          },
+          "b:htmlTagName": "body",
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "8"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "8"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "0"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "0"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "8"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "8"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "1184"
+          }
+      },
+      {
+          "@id": "r:art4#10",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#343434",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "10"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasAttribute": [
+              {
+                  "@id": "r:art4#10-attr-style"
+              },
+              {
+                  "@id": "r:art4#10-attr-href"
+              }
+          ],
+          "b:hasText": "more...",
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "994"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "176"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "1.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "41"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "994"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "176"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "41"
+          }
+      },
+      {
+          "@id": "r:art4#10-attr-href",
+          "rdf:value": "about.php",
+          "rdfs:label": "href"
+      },
+      {
+          "@id": "r:art4#10-attr-style",
+          "rdf:value": "margin-left: 1em",
+          "rdfs:label": "style"
+      },
+      {
+          "@id": "r:art4#11",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#343434",
+          "b:containsImage": {
+              "@id": "urn:uuid:c36f2a79-f01d-43bd-8d90-bb55a2d89409"
+          },
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "11"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasAttribute": [
+              {
+                  "@id": "r:art4#11-attr-src"
+              },
+              {
+                  "@id": "r:art4#11-attr-href"
+              }
+          ],
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:htmlTagName": "img",
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "606"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "234"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "606"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "234"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "20"
+          }
+      },
+      {
+          "@id": "r:art4#11-attr-href",
+          "rdf:value": "http://a.fsdn.com/con/app/proj/cssbox/screenshots/browser1.jpeg",
+          "rdfs:label": "href"
+      },
+      {
+          "@id": "r:art4#11-attr-src",
+          "rdf:value": "http://a.fsdn.com/con/app/proj/cssbox/screenshots/browser1.jpeg/182/137",
+          "rdfs:label": "src"
+      },
+      {
+          "@id": "r:art4#12",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#000000",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "12"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasAttribute": {
+              "@id": "r:art4#12-attr-class"
+          },
+          "b:hasText": " ",
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "639"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "242"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "4"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "639"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "242"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "4"
+          }
+      },
+      {
+          "@id": "r:art4#12-attr-class",
+          "rdf:value": "screenshots",
+          "rdfs:label": "class"
+      },
+      {
+          "@id": "r:art4#13",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#343434",
+          "b:containsImage": {
+              "@id": "urn:uuid:eac14358-2f44-4e85-9c18-3ca7eddc9cb8"
+          },
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "13"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasAttribute": [
+              {
+                  "@id": "r:art4#13-attr-src"
+              },
+              {
+                  "@id": "r:art4#13-attr-href"
+              }
+          ],
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:htmlTagName": "img",
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "657"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "234"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "657"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "234"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "20"
+          }
+      },
+      {
+          "@id": "r:art4#13-attr-href",
+          "rdf:value": "http://a.fsdn.com/con/app/proj/cssbox/screenshots/318269.jpg",
+          "rdfs:label": "href"
+      },
+      {
+          "@id": "r:art4#13-attr-src",
+          "rdf:value": "http://a.fsdn.com/con/app/proj/cssbox/screenshots/318269.jpg/182/137",
+          "rdfs:label": "src"
+      },
+      {
+          "@id": "r:art4#14",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#000000",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "14"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasAttribute": {
+              "@id": "r:art4#14-attr-class"
+          },
+          "b:hasText": " ",
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "690"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "242"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "4"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "690"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "242"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "4"
+          }
+      },
+      {
+          "@id": "r:art4#14-attr-class",
+          "rdf:value": "screenshots",
+          "rdfs:label": "class"
+      },
+      {
+          "@id": "r:art4#15",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#343434",
+          "b:containsImage": {
+              "@id": "urn:uuid:3f0ff03f-38e0-42df-9500-7064fceea9ac"
+          },
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "15"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasAttribute": [
+              {
+                  "@id": "r:art4#15-attr-src"
+              },
+              {
+                  "@id": "r:art4#15-attr-href"
+              }
+          ],
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:htmlTagName": "img",
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "707"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "234"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "20"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "707"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "234"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "20"
+          }
+      },
+      {
+          "@id": "r:art4#15-attr-href",
+          "rdf:value": "http://a.fsdn.com/con/app/proj/cssbox/screenshots/318271.jpg",
+          "rdfs:label": "href"
+      },
+      {
+          "@id": "r:art4#15-attr-src",
+          "rdf:value": "http://a.fsdn.com/con/app/proj/cssbox/screenshots/318271.jpg/182/137",
+          "rdfs:label": "src"
+      },
+      {
+          "@id": "r:art4#16",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#000000",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "12.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "1.0"
+          },
+          "b:hasText": "Latest News",
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "19"
+          },
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "207"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "297"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "19"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "94"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "207"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "297"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "94"
+          }
+      },
+      {
+          "@id": "r:art4#17",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#000000",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "17"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "8.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasAttribute": {
+              "@id": "r:art4#17-attr-class"
+          },
+          "b:hasText": "Fri, 01 Nov 2019 08:56:37 -0000",
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "13"
+          },
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "208"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "334"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "13"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "155"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "208"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "334"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "155"
+          }
+      },
+      {
+          "@id": "r:art4#17-attr-class",
+          "rdf:value": "date",
+          "rdfs:label": "class"
+      },
+      {
+          "@id": "r:art4#18",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#000000",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "18"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "1.0"
+          },
+          "b:hasText": "jStyleParser 3.5 released",
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "208"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "349"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "158"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "208"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "349"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "158"
+          }
+      },
+      {
+          "@id": "r:art4#19",
+          "@type": "b:Box",
+          "b:belongsTo": {
+              "@id": "r:art4"
+          },
+          "b:color": "#000000",
+          "b:documentOrder": {
+              "@type": "xsd:int",
+              "@value": "19"
+          },
+          "b:fontFamily": "Arial",
+          "b:fontSize": {
+              "@type": "xsd:float",
+              "@value": "10.0"
+          },
+          "b:fontStyle": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:fontWeight": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:hasText": "The processing of the counter-related properties has been reworked and fixed.",
+          "b:height": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:isChildOf": {
+              "@id": "r:art4#0"
+          },
+          "b:lineThrough": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:positionX": {
+              "@type": "xsd:int",
+              "@value": "215"
+          },
+          "b:positionY": {
+              "@type": "xsd:int",
+              "@value": "370"
+          },
+          "b:underline": {
+              "@type": "xsd:float",
+              "@value": "0.0"
+          },
+          "b:visualHeight": {
+              "@type": "xsd:int",
+              "@value": "16"
+          },
+          "b:visualWidth": {
+              "@type": "xsd:int",
+              "@value": "448"
+          },
+          "b:visualX": {
+              "@type": "xsd:int",
+              "@value": "215"
+          },
+          "b:visualY": {
+              "@type": "xsd:int",
+              "@value": "370"
+          },
+          "b:width": {
+              "@type": "xsd:int",
+              "@value": "448"
+          }
+      },
+      
+  ],
+  "@id": "r:art4",
+  "@context": {
+      "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "b": "http://fitlayout.github.io/ontology/render.owl#",
+      "a": "http://fitlayout.github.io/ontology/segmentation.owl#",
+      "fl": "http://fitlayout.github.io/ontology/fitlayout.owl#",
+      "r": "http://fitlayout.github.io/resource/"
+  }
+}
+`);
 myParser.end();
-},{"jsonld-streaming-parser":39}],28:[function(require,module,exports){
+
+},{"fs":1,"jsonld-streaming-parser":40}],29:[function(require,module,exports){
 /* jshint esversion: 6 */
 /* jslint node: true */
 'use strict';
@@ -6457,7 +7615,7 @@ module.exports = function serialize (object) {
   }, '') + '}';
 };
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function(self) {
 
 var irrelevant = (function (exports) {
@@ -6989,7 +8147,7 @@ var irrelevant = (function (exports) {
 }({}));
 })(typeof self !== 'undefined' ? self : this);
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict'
 
@@ -7370,8 +8528,8 @@ Link.formatAttribute = function( attr, value ) {
 
 module.exports = Link
 
-}).call(this)}).call(this,{"isBuffer":require("../../../../../AppData/Roaming/npm-cache/_npx/9636/node_modules/browserify/node_modules/is-buffer/index.js")})
-},{"../../../../../AppData/Roaming/npm-cache/_npx/9636/node_modules/browserify/node_modules/is-buffer/index.js":7}],31:[function(require,module,exports){
+}).call(this)}).call(this,{"isBuffer":require("../../../../../AppData/Roaming/npm/node_modules/browserify/node_modules/is-buffer/index.js")})
+},{"../../../../../AppData/Roaming/npm/node_modules/browserify/node_modules/is-buffer/index.js":8}],32:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -7392,7 +8550,7 @@ __exportStar(require("./lib/JsonLdContext"), exports);
 __exportStar(require("./lib/JsonLdContextNormalized"), exports);
 __exportStar(require("./lib/Util"), exports);
 
-},{"./lib/ContextParser":32,"./lib/ErrorCoded":33,"./lib/FetchDocumentLoader":34,"./lib/IDocumentLoader":35,"./lib/JsonLdContext":36,"./lib/JsonLdContextNormalized":37,"./lib/Util":38}],32:[function(require,module,exports){
+},{"./lib/ContextParser":33,"./lib/ErrorCoded":34,"./lib/FetchDocumentLoader":35,"./lib/IDocumentLoader":36,"./lib/JsonLdContext":37,"./lib/JsonLdContextNormalized":38,"./lib/Util":39}],33:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -8166,7 +9324,7 @@ exports.defaultExpandOptions = {
     allowVocabRelativeToBase: true,
 };
 
-},{"./ErrorCoded":33,"./FetchDocumentLoader":34,"./JsonLdContextNormalized":37,"./Util":38,"canonicalize":28,"cross-fetch/polyfill":29,"relative-to-absolute-iri":70}],33:[function(require,module,exports){
+},{"./ErrorCoded":34,"./FetchDocumentLoader":35,"./JsonLdContextNormalized":38,"./Util":39,"canonicalize":29,"cross-fetch/polyfill":30,"relative-to-absolute-iri":71}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ERROR_CODES = exports.ErrorCoded = void 0;
@@ -8243,7 +9401,7 @@ var ERROR_CODES;
     ERROR_CODES["INVALID_STREAMING_KEY_ORDER"] = "invalid streaming key order";
 })(ERROR_CODES = exports.ERROR_CODES || (exports.ERROR_CODES = {}));
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -8314,16 +9472,16 @@ class FetchDocumentLoader {
 }
 exports.FetchDocumentLoader = FetchDocumentLoader;
 
-},{"./ErrorCoded":33,"cross-fetch/polyfill":29,"http-link-header":30,"relative-to-absolute-iri":70}],35:[function(require,module,exports){
+},{"./ErrorCoded":34,"cross-fetch/polyfill":30,"http-link-header":31,"relative-to-absolute-iri":71}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 "use strict";
 // tslint:disable:max-line-length
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonLdContextNormalized = void 0;
@@ -8493,7 +9651,7 @@ class JsonLdContextNormalized {
 }
 exports.JsonLdContextNormalized = JsonLdContextNormalized;
 
-},{"./ContextParser":32,"./ErrorCoded":33,"./Util":38,"relative-to-absolute-iri":70}],38:[function(require,module,exports){
+},{"./ContextParser":33,"./ErrorCoded":34,"./Util":39,"relative-to-absolute-iri":71}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Util = void 0;
@@ -8726,7 +9884,7 @@ Util.CONTAINERS_1_0 = [
     '@index',
 ];
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -8741,7 +9899,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./lib/JsonLdParser"), exports);
 
-},{"./lib/JsonLdParser":41}],40:[function(require,module,exports){
+},{"./lib/JsonLdParser":42}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContextTree = void 0;
@@ -8787,7 +9945,7 @@ class ContextTree {
 }
 exports.ContextTree = ContextTree;
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonLdParser = void 0;
@@ -9237,7 +10395,7 @@ JsonLdParser.ENTRY_HANDLERS = [
     new EntryHandlerInvalidFallback_1.EntryHandlerInvalidFallback(),
 ];
 
-},{"./ParsingContext":42,"./Util":43,"./entryhandler/EntryHandlerArrayValue":48,"./entryhandler/EntryHandlerContainer":49,"./entryhandler/EntryHandlerInvalidFallback":50,"./entryhandler/EntryHandlerPredicate":51,"./entryhandler/keyword/EntryHandlerKeywordContext":53,"./entryhandler/keyword/EntryHandlerKeywordGraph":54,"./entryhandler/keyword/EntryHandlerKeywordId":55,"./entryhandler/keyword/EntryHandlerKeywordIncluded":56,"./entryhandler/keyword/EntryHandlerKeywordNest":57,"./entryhandler/keyword/EntryHandlerKeywordType":58,"./entryhandler/keyword/EntryHandlerKeywordUnknownFallback":59,"./entryhandler/keyword/EntryHandlerKeywordValue":60,"http-link-header":30,"jsonld-context-parser":31,"jsonparse":61,"stream":10}],42:[function(require,module,exports){
+},{"./ParsingContext":43,"./Util":44,"./entryhandler/EntryHandlerArrayValue":49,"./entryhandler/EntryHandlerContainer":50,"./entryhandler/EntryHandlerInvalidFallback":51,"./entryhandler/EntryHandlerPredicate":52,"./entryhandler/keyword/EntryHandlerKeywordContext":54,"./entryhandler/keyword/EntryHandlerKeywordGraph":55,"./entryhandler/keyword/EntryHandlerKeywordId":56,"./entryhandler/keyword/EntryHandlerKeywordIncluded":57,"./entryhandler/keyword/EntryHandlerKeywordNest":58,"./entryhandler/keyword/EntryHandlerKeywordType":59,"./entryhandler/keyword/EntryHandlerKeywordUnknownFallback":60,"./entryhandler/keyword/EntryHandlerKeywordValue":61,"http-link-header":31,"jsonld-context-parser":32,"jsonparse":62,"stream":11}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ParsingContext = void 0;
@@ -9560,7 +10718,7 @@ ParsingContext.EXPAND_OPTIONS = {
     },
 };
 
-},{"./ContextTree":40,"./JsonLdParser":41,"jsonld-context-parser":31,"jsonld-context-parser/lib/ErrorCoded":33}],43:[function(require,module,exports){
+},{"./ContextTree":41,"./JsonLdParser":42,"jsonld-context-parser":32,"jsonld-context-parser/lib/ErrorCoded":34}],44:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Util = void 0;
@@ -10360,7 +11518,7 @@ Util.XSD_INTEGER = Util.XSD + 'integer';
 Util.XSD_DOUBLE = Util.XSD + 'double';
 Util.RDF = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 
-},{"./entryhandler/EntryHandlerContainer":49,"canonicalize":28,"jsonld-context-parser":31,"rdf-data-factory":62}],44:[function(require,module,exports){
+},{"./entryhandler/EntryHandlerContainer":50,"canonicalize":29,"jsonld-context-parser":32,"rdf-data-factory":63}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContainerHandlerIdentifier = void 0;
@@ -10414,7 +11572,7 @@ class ContainerHandlerIdentifier {
 }
 exports.ContainerHandlerIdentifier = ContainerHandlerIdentifier;
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContainerHandlerIndex = void 0;
@@ -10486,7 +11644,7 @@ class ContainerHandlerIndex {
 }
 exports.ContainerHandlerIndex = ContainerHandlerIndex;
 
-},{"../Util":43,"../entryhandler/EntryHandlerPredicate":51,"jsonld-context-parser":31}],46:[function(require,module,exports){
+},{"../Util":44,"../entryhandler/EntryHandlerPredicate":52,"jsonld-context-parser":32}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContainerHandlerLanguage = void 0;
@@ -10519,7 +11677,7 @@ class ContainerHandlerLanguage {
 }
 exports.ContainerHandlerLanguage = ContainerHandlerLanguage;
 
-},{"jsonld-context-parser":31}],47:[function(require,module,exports){
+},{"jsonld-context-parser":32}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContainerHandlerType = void 0;
@@ -10582,7 +11740,7 @@ class ContainerHandlerType {
 }
 exports.ContainerHandlerType = ContainerHandlerType;
 
-},{"../Util":43,"../entryhandler/EntryHandlerPredicate":51}],48:[function(require,module,exports){
+},{"../Util":44,"../entryhandler/EntryHandlerPredicate":52}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerArrayValue = void 0;
@@ -10706,7 +11864,7 @@ class EntryHandlerArrayValue {
 }
 exports.EntryHandlerArrayValue = EntryHandlerArrayValue;
 
-},{"../Util":43}],49:[function(require,module,exports){
+},{"../Util":44}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerContainer = void 0;
@@ -10896,7 +12054,7 @@ EntryHandlerContainer.CONTAINER_HANDLERS = {
     '@type': new ContainerHandlerType_1.ContainerHandlerType(),
 };
 
-},{"../Util":43,"../containerhandler/ContainerHandlerIdentifier":44,"../containerhandler/ContainerHandlerIndex":45,"../containerhandler/ContainerHandlerLanguage":46,"../containerhandler/ContainerHandlerType":47}],50:[function(require,module,exports){
+},{"../Util":44,"../containerhandler/ContainerHandlerIdentifier":45,"../containerhandler/ContainerHandlerIndex":46,"../containerhandler/ContainerHandlerLanguage":47,"../containerhandler/ContainerHandlerType":48}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerInvalidFallback = void 0;
@@ -10923,7 +12081,7 @@ class EntryHandlerInvalidFallback {
 }
 exports.EntryHandlerInvalidFallback = EntryHandlerInvalidFallback;
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerPredicate = void 0;
@@ -11062,7 +12220,7 @@ class EntryHandlerPredicate {
 }
 exports.EntryHandlerPredicate = EntryHandlerPredicate;
 
-},{"../Util":43,"jsonld-context-parser":31}],52:[function(require,module,exports){
+},{"../Util":44,"jsonld-context-parser":32}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeyword = void 0;
@@ -11088,7 +12246,7 @@ class EntryHandlerKeyword {
 }
 exports.EntryHandlerKeyword = EntryHandlerKeyword;
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordContext = void 0;
@@ -11126,7 +12284,7 @@ class EntryHandlerKeywordContext extends EntryHandlerKeyword_1.EntryHandlerKeywo
 }
 exports.EntryHandlerKeywordContext = EntryHandlerKeywordContext;
 
-},{"./EntryHandlerKeyword":52,"jsonld-context-parser":31}],54:[function(require,module,exports){
+},{"./EntryHandlerKeyword":53,"jsonld-context-parser":32}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordGraph = void 0;
@@ -11145,7 +12303,7 @@ class EntryHandlerKeywordGraph extends EntryHandlerKeyword_1.EntryHandlerKeyword
 }
 exports.EntryHandlerKeywordGraph = EntryHandlerKeywordGraph;
 
-},{"./EntryHandlerKeyword":52}],55:[function(require,module,exports){
+},{"./EntryHandlerKeyword":53}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordId = void 0;
@@ -11186,7 +12344,7 @@ class EntryHandlerKeywordId extends EntryHandlerKeyword_1.EntryHandlerKeyword {
 }
 exports.EntryHandlerKeywordId = EntryHandlerKeywordId;
 
-},{"./EntryHandlerKeyword":52,"jsonld-context-parser":31}],56:[function(require,module,exports){
+},{"./EntryHandlerKeyword":53,"jsonld-context-parser":32}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordIncluded = void 0;
@@ -11215,7 +12373,7 @@ class EntryHandlerKeywordIncluded extends EntryHandlerKeyword_1.EntryHandlerKeyw
 }
 exports.EntryHandlerKeywordIncluded = EntryHandlerKeywordIncluded;
 
-},{"./EntryHandlerKeyword":52,"jsonld-context-parser":31}],57:[function(require,module,exports){
+},{"./EntryHandlerKeyword":53,"jsonld-context-parser":32}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordNest = void 0;
@@ -11240,7 +12398,7 @@ class EntryHandlerKeywordNest extends EntryHandlerKeyword_1.EntryHandlerKeyword 
 }
 exports.EntryHandlerKeywordNest = EntryHandlerKeywordNest;
 
-},{"./EntryHandlerKeyword":52,"jsonld-context-parser":31}],58:[function(require,module,exports){
+},{"./EntryHandlerKeyword":53,"jsonld-context-parser":32}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordType = void 0;
@@ -11318,7 +12476,7 @@ class EntryHandlerKeywordType extends EntryHandlerKeyword_1.EntryHandlerKeyword 
 }
 exports.EntryHandlerKeywordType = EntryHandlerKeywordType;
 
-},{"../../Util":43,"../EntryHandlerPredicate":51,"./EntryHandlerKeyword":52,"jsonld-context-parser":31}],59:[function(require,module,exports){
+},{"../../Util":44,"../EntryHandlerPredicate":52,"./EntryHandlerKeyword":53,"jsonld-context-parser":32}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordUnknownFallback = void 0;
@@ -11372,7 +12530,7 @@ EntryHandlerKeywordUnknownFallback.VALID_KEYWORDS_TYPES = {
     '@value': null,
 };
 
-},{"jsonld-context-parser":31}],60:[function(require,module,exports){
+},{"jsonld-context-parser":32}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordValue = void 0;
@@ -11403,7 +12561,7 @@ class EntryHandlerKeywordValue extends EntryHandlerKeyword_1.EntryHandlerKeyword
 }
 exports.EntryHandlerKeywordValue = EntryHandlerKeywordValue;
 
-},{"./EntryHandlerKeyword":52}],61:[function(require,module,exports){
+},{"./EntryHandlerKeyword":53}],62:[function(require,module,exports){
 (function (Buffer){(function (){
 /*global Buffer*/
 // Named constants with unique integer values
@@ -11820,7 +12978,7 @@ Parser.C = C;
 module.exports = Parser;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":3}],62:[function(require,module,exports){
+},{"buffer":4}],63:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11841,7 +12999,7 @@ __exportStar(require("./lib/NamedNode"), exports);
 __exportStar(require("./lib/Quad"), exports);
 __exportStar(require("./lib/Variable"), exports);
 
-},{"./lib/BlankNode":63,"./lib/DataFactory":64,"./lib/DefaultGraph":65,"./lib/Literal":66,"./lib/NamedNode":67,"./lib/Quad":68,"./lib/Variable":69}],63:[function(require,module,exports){
+},{"./lib/BlankNode":64,"./lib/DataFactory":65,"./lib/DefaultGraph":66,"./lib/Literal":67,"./lib/NamedNode":68,"./lib/Quad":69,"./lib/Variable":70}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlankNode = void 0;
@@ -11859,7 +13017,7 @@ class BlankNode {
 }
 exports.BlankNode = BlankNode;
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataFactory = void 0;
@@ -11982,7 +13140,7 @@ class DataFactory {
 }
 exports.DataFactory = DataFactory;
 
-},{"./BlankNode":63,"./DefaultGraph":65,"./Literal":66,"./NamedNode":67,"./Quad":68,"./Variable":69}],65:[function(require,module,exports){
+},{"./BlankNode":64,"./DefaultGraph":66,"./Literal":67,"./NamedNode":68,"./Quad":69,"./Variable":70}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultGraph = void 0;
@@ -12003,7 +13161,7 @@ class DefaultGraph {
 exports.DefaultGraph = DefaultGraph;
 DefaultGraph.INSTANCE = new DefaultGraph();
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Literal = void 0;
@@ -12037,7 +13195,7 @@ exports.Literal = Literal;
 Literal.RDF_LANGUAGE_STRING = new NamedNode_1.NamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
 Literal.XSD_STRING = new NamedNode_1.NamedNode('http://www.w3.org/2001/XMLSchema#string');
 
-},{"./NamedNode":67}],67:[function(require,module,exports){
+},{"./NamedNode":68}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NamedNode = void 0;
@@ -12055,7 +13213,7 @@ class NamedNode {
 }
 exports.NamedNode = NamedNode;
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Quad = void 0;
@@ -12083,7 +13241,7 @@ class Quad {
 }
 exports.Quad = Quad;
 
-},{}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Variable = void 0;
@@ -12101,7 +13259,7 @@ class Variable {
 }
 exports.Variable = Variable;
 
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -12109,7 +13267,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./lib/Resolve"));
 
-},{"./lib/Resolve":71}],71:[function(require,module,exports){
+},{"./lib/Resolve":72}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -12329,4 +13487,4 @@ function isCharacterAllowedAfterRelativePathSegment(character) {
     return !character || character === '#' || character === '?' || character === '/';
 }
 
-},{}]},{},[27]);
+},{}]},{},[28]);

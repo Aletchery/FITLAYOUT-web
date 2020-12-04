@@ -3,25 +3,154 @@ const fs = require("fs");
 
 var boxesId=[];
 var boxes=[];
+var foundID = false;
+
+
+/*var box={
+    id: "",
+    backgroundColor: "",
+    posX: "",
+    posY: "",
+    widht: "",
+    height: "",
+    belongsTo:"",
+    color:"",
+    documentOrder:"",
+    fontFamily:"",
+    fontSize:"",
+    fontStyle:"",
+    fontWeight:"",
+    hasAttribute:"",
+    htmlTagName:"",
+    lineThrough:"",
+    underline:"",
+    visualHeight:"",
+    visualWidth:"",
+    visualX:"",
+    visualY:"",
+    type:""
+}*/
+
+function main(){
+     console.log(boxes);
+
+}
 
 function saveObject(data){
     var object = data.object.value;
     var lastIndexO = object.lastIndexOf('#')+1;
-    var type = object.substr(lastIndexO,object.lenght);
+    var value = object.substr(lastIndexO,object.lenght);
 
     var subject = data.subject.value;
     var lastIndexS = subject.lastIndexOf('/')+1;
     var id = subject.substr(lastIndexS,subject.lenght);
-    if(type== "Box"){
+    if(value== "Box"){
         boxesId.push(id);
     }
 
     var predicate = data.predicate.value;
     var lastIndexP = predicate.lastIndexOf('#')+1;
-    var value = predicate.substr(lastIndexP,predicate.lenght);
- 
-                var O ={Oid: id, type: value, value: object};
+    var type = predicate.substr(lastIndexP,predicate.lenght);
+        for(var i = 0; i<boxes.length;i++){
+            if(id==boxes[i].id){
+                foundID = true;
+
+                switch (type) {
+                    case "backgroundColor":
+                        boxes[i].backgroundColor = value;                  
+                        break;
+
+                    case "positionX":
+                        boxes[i].posX = value;                      
+                        break;
+
+                    case "positionY":
+                        boxes[i].posY = value;
+                        break;
+
+                    case "width":
+                        boxes[i].widht = value; 
+                        break;
+
+                    case "height":
+                        boxes[i].height = value;
+                        break;
+
+                    case "belongsTo":
+                        boxes[i].belongsTo = value;
+                        break;
+                    
+                    case "color":
+                        boxes[i].color = value;
+                        break;
+                    
+                    case "documentOrder":
+                        boxes[i].documentOrder = value;
+                        break;    
+                    
+                    case "fontFamily":
+                        boxes[i].fontFamily = value;
+                        break;
+
+                    case "fontSize":
+                        boxes[i].fontSize = value;
+                        break;
+
+                    case "fontStyle":
+                        boxes[i].fontStyle = value;
+                        break;
+
+                    case "fontWeight":
+                        boxes[i].fontWeight = value;
+                        break;
+
+                    case "hasAttribute":
+                        boxes[i].hasAttribute = value;
+                        break;
+
+                    case "htmlTagName":
+                        boxes[i].htmlTagName = value;
+                        break;
+                    
+                    case "lineTrough":
+                        boxes[i].lineTrough = value;
+                        break;
+
+                    case "underLine":
+                        boxes[i].underLine = value;
+                        break;
+
+                    case "visualHeight":
+                        boxes[i].visualHeight = value;
+                        break;
+
+                    case "visualWidth":
+                        boxes[i].visualWidth = value;
+                        break;
+
+                    case "visualX":
+                        boxes[i].visualX = value;
+                        break;
+
+                    case "visualY":
+                        boxes[i].visualY = value;
+                        break;
+
+                    case "type":
+                        boxes[i].type = value;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+        if(foundID == false){
+            var O ={id: id};
                 boxes.push(O);
+        }
+
+        foundID = false;
 }
 
 
@@ -30,7 +159,7 @@ const myParser = new JsonLdParser();
 myParser
   .on('data', saveObject)
   .on('error', console.error)
-  .on('end', () => console.log(boxes));
+  .on('end', main);
 
 
 myParser.write(`{
