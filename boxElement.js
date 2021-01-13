@@ -4,11 +4,10 @@ const boxes = require('./index');
 class BoxElement extends HTMLDivElement {
     constructor() {
         super();
-        const d = document.createElement('template');
+        const temp = document.createElement('template');
         
 
-       // this.attachShadow({mode: 'open'});
-        //this.shadowRoot.appendChild(d.content.cloneNode(true));
+       this.attachShadow({mode: 'open'}); 
        
       }
     }

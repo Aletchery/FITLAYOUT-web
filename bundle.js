@@ -6419,11 +6419,10 @@ const boxes = require('./index');
 class BoxElement extends HTMLDivElement {
     constructor() {
         super();
-        const d = document.createElement('template');
+        const temp = document.createElement('template');
         
 
-        this.attachShadow({mode: 'open'});
-        this.shadowRoot.appendChild(d.content.cloneNode(true));
+       this.attachShadow({mode: 'open'}); 
        
       }
     }
@@ -6480,17 +6479,16 @@ function main(){
          //for(var j =0; j<boxesId.length;j++){
          //    if(boxes[i].id==boxesId[j]){
                  
-                 const d = document.createElement('box-element');
+            const d = document.createElement('box-element');
             d.innerHTML = `
-            <box-element style="position: absolute; top: `+ boxes[i].posY +`px; left: `+ boxes[i].posX +`px; width: `+ boxes[i].widht +
-            `px; height: `+ boxes[i].height +`px; background-color:#`+ boxes[i].backgroundColor +`; color:#`+ boxes[i].color +`; font-size:`+
-            boxes[i].fontSize +`px; font-weight: `+ boxes[i].fontWeight +`; font-family:`+ boxes[i].fontFamily +`; font-style: `+ boxes[i].fontStyle +`;
-             border-left:`+ boxes[i].borderL.borderWidth +`px `+ boxes[i].borderL.borderStyle +` #`+ boxes[i].borderL.borderColor +`;
-             border-right:`+ boxes[i].borderR.borderWidth +`px `+ boxes[i].borderR.borderStyle +` #`+ boxes[i].borderR.borderColor +`;
-             border-top:`+ boxes[i].borderT.borderWidth +`px `+ boxes[i].borderT.borderStyle +` #`+ boxes[i].borderT.borderColor +`;
-             border-bottom:`+ boxes[i].borderB.borderWidth +`px `+ boxes[i].borderB.borderStyle +` #`+ boxes[i].borderB.borderColor +`;
-              ">
-            `+ boxes[i].text +`
+            <box-element style="position: absolute; top: ${boxes[i].posY}px; left: ${ boxes[i].posX }px; width: ${boxes[i].widht}px;
+            height: ${ boxes[i].height }px; background-color:#${ boxes[i].backgroundColor }; color:#${boxes[i].color}; font-size:${
+            boxes[i].fontSize }px; font-weight: ${ boxes[i].fontWeight}; font-family:${ boxes[i].fontFamily}; font-style: ${ boxes[i].fontStyle};
+             border-left:${ boxes[i].borderL.borderWidth}px ${ boxes[i].borderL.borderStyle } #${ boxes[i].borderL.borderColor };
+             border-right:${ boxes[i].borderR.borderWidth}px ${ boxes[i].borderR.borderStyle } #${ boxes[i].borderR.borderColor };
+             border-top:${ boxes[i].borderT.borderWidth}px ${ boxes[i].borderT.borderStyle } #${ boxes[i].borderT.borderColor };
+             border-bottom:${ boxes[i].borderB.borderWidth}px ${ boxes[i].borderB.borderStyle } #${ boxes[i].borderB.borderColor };">
+            ${ boxes[i].text }
             </box-element>
              `;
             const body = document.getElementById("body");
@@ -6876,7 +6874,7 @@ function saveObject(data){
         foundID = false;
 }
 
-
+var text = "";
 const myParser = new JsonLdParser();
 
 myParser
@@ -6884,8 +6882,18 @@ myParser
   .on('error', console.error)
   .on('end', main);
 
+var url = "http://lotrando.fit.vutbr.cz:8400/service/artifact/item/r:art1"
+fetch(url)
+.then(function(body){
+    return body.text(); // <--- THIS PART WAS MISSING
+  }).then(function(data) {
+    
+    myParser.write(data);
+    myParser.end();
+  });
 
-myParser.write(`
+  
+/*myParser.write(`
     {
         "@graph": [
             {
@@ -12078,7 +12086,7 @@ myParser.write(`
     }
     
 `);
-myParser.end();
+myParser.end();*/
 module.exports = [boxes];
 
 },{"fs":1,"jsonld-streaming-parser":41}],30:[function(require,module,exports){
