@@ -5,7 +5,20 @@
  body, html {
     height:100%;
  }
- #canvas {
-    position:absolute;
-    height:100%; width:100%;
+ .list {
+  
+ 
+ }
+ #view {
+    
+    
+ }
+ .right {
+   
+ }
+
+ ol li {
+    font-size: 30px;
+    cursor: pointer;
+    text-align: center;
  }

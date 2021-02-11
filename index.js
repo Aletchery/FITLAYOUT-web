@@ -3,6 +3,7 @@ const fs = require("fs");
 
 var boxesId=[];
 var boxes=[];
+var artID=[];
 var foundID = false;
 
 
@@ -31,7 +32,11 @@ var foundID = false;
     type:""
 }*/
 
+
+
+
 function main(){
+    
      console.log(boxes);
      //console.log(boxesId);
      for(var i = 0; i<boxes.length;i++){
@@ -50,13 +55,69 @@ function main(){
             ${ boxes[i].text }
             </box-element>
              `;
-            const body = document.getElementById("body");
+            const body = document.getElementById("view");
             body.appendChild(d);
          //    }
        //  }
      
      }
 
+}
+function artifacts(data){
+    
+    var subject = data.subject.value;
+    var lastIndexS = subject.lastIndexOf('/')+1;
+    var id = subject.substr(lastIndexS,subject.lenght);
+    var found = false;
+    artID.forEach(function(item){
+        if(id == item){
+            found = true;
+            
+        }
+    })
+    if(found == false){
+        artID.push(id);
+    }
+
+    
+}
+function list(){
+    const list = document.getElementById("list");
+    list.setAttribute("id", "list");
+
+    var ol=document.createElement('ol');
+    
+    list.appendChild(ol);
+
+    for (var i=0; i<artID.length; i++){
+        var li=document.createElement('li');
+        ol.appendChild(li);
+        li.innerHTML=li.innerHTML + artID[i];
+        li.setAttribute("id",artID[i]);
+    }
+
+    list.addEventListener("click", function(event) {
+    const target = event.target.id;
+    getArt(target);
+    });
+}
+
+function getArt(target){
+const artParser = new JsonLdParser();
+artParser
+  .on('data', saveObject)
+  .on('error', console.error)
+  .on('end', main);
+
+url = "http://lotrando.fit.vutbr.cz:8400/service/artifact/item/r:" + target;
+fetch(url)
+.then(function(body){
+    return body.text();
+  }).then(function(data) {
+    
+    artParser.write(data);
+    artParser.end();
+  });
 }
 
 function saveObject(data){
@@ -68,6 +129,7 @@ function saveObject(data){
     var subject = data.subject.value;
     var lastIndexS = subject.lastIndexOf('/')+1;
     var id = subject.substr(lastIndexS,subject.lenght);
+
     var borderS = "";
 
     if(id.includes("Btop")){
@@ -433,15 +495,15 @@ function saveObject(data){
         foundID = false;
 }
 
-var text = "";
+
 const myParser = new JsonLdParser();
 
 myParser
-  .on('data', saveObject)
+  .on('data', artifacts)
   .on('error', console.error)
-  .on('end', main);
+  .on('end', list);
 
-var url = "http://lotrando.fit.vutbr.cz:8400/service/artifact/item/r:art1"
+var url = "http://lotrando.fit.vutbr.cz:8400/service/artifact"
 fetch(url)
 .then(function(body){
     return body.text();
@@ -450,4 +512,5 @@ fetch(url)
     myParser.write(data);
     myParser.end();
   });
+
 module.exports = [boxes];
