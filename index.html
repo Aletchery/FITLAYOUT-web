@@ -3,13 +3,30 @@
   <head>
     <meta charset="utf-8" />
     <title>Browserify-parser demo app</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
   </head>
   <body id ="body">
-    <div class="list" id="list"></div>
-    <div class="view" id="view">
+    <div class="row">
+    <div class="list bg-secondary text-light border border-dark" id="list">
     </div>
-    <div class="right"></div>
+    <div class="middle">
+      <h1 id="loading"><div class="loader"></div></h1>
+    <div class="view" id="view">
+      
+    </div>
+    </div>
+    <div class="right bg-secondary text-light">
+      <div class="top border border-dark" id="top">
+        <div id="box_list">
+          <ul id="myUL2">
+
+          </ul>
+        </div>
+      </div>
+      <div class="bottom border border-dark" id="bottom"></div>
+    </div>
+  </div>
     <script src="bundle.js"></script>    
   </body>
 </html>

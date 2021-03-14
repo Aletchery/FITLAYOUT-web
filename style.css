@@ -4,21 +4,156 @@
  }
  body, html {
     height:100%;
+    overflow: hidden;
  }
  .list {
-  
+  float:left;
+  background-color: green;
+  width: 20%;
+  height: 100vh;
  
  }
- #view {
-    
-    
+ .row:after {
+   content: "";
+   display: table;
+   clear: both;
  }
- .right {
+ .middle {
+   float: left;
+   width: 60%;
+   height: 100vh;
+   overflow: auto;
+   position: relative;
    
  }
 
- ol li {
-    font-size: 30px;
-    cursor: pointer;
-    text-align: center;
+ #loading {
+  visibility: hidden;
+}
+
+.visibility {
+ visibility: hidden;
+}
+
+.view h1 {
+  text-align: center;
+  padding-top: 40vh;
+}
+
+ .right {
+   float: left;
+   width: 20%;
+   height: 100vh;
+   
  }
+ .top {
+    height: 50vh;
+    width: 100%;
+    overflow: auto;
+    position: relative;
+ }
+ .bottom {
+    height: 50vh;
+    overflow: auto;
+    width: 100%;
+    position: relative;
+ }
+ .row:after {
+   content: "";
+   display: table;
+   clear: both;
+ }
+
+ #list {
+   font-size: 30px;
+ }
+
+table {
+  padding-top: 10px;
+  text-align: center;
+  font-size: 20px;
+  width: 100%;
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+ box-element :hover {
+  outline-color: red;
+  outline-style: solid;
+  cursor: pointer;
+ }
+
+.highlight {
+  background-color: darkslategrey;
+}
+
+ /*--------------------------------*/
+
+ ul, #myUL {
+   list-style-type: none;
+   list-style-position:inside;
+ }
+ li {
+  cursor: pointer;
+ 
+ }
+ #myUL {
+   margin: 0;
+   padding: 0;
+ }
+ 
+ .caret {
+   cursor: pointer;
+   -webkit-user-select: none; /* Safari 3.1+ */
+   -moz-user-select: none; /* Firefox 2+ */
+   -ms-user-select: none; /* IE 10+ */
+   user-select: none;
+ }
+ 
+ .caret::before {
+   content: "\25B6";
+   color: black;
+   display: inline-block;
+   margin-right: 6px;
+ }
+ 
+ .caret-down::before {
+   -ms-transform: rotate(90deg); /* IE 9 */
+   -webkit-transform: rotate(90deg); /* Safari */
+   transform: rotate(90deg);  
+ }
+ 
+ .nested {
+   display: none;
+   margin-left: 10px;
+ }
+ 
+ .active {
+   display: block;
+ }
+
+ .loader {
+  margin: auto;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
