@@ -1,12 +1,13 @@
+//index.js
+//Adam Sevcik 2022
+
 const JsonLdParser = require("jsonld-streaming-parser").JsonLdParser;
-const fs = require("fs");
+//const fs = require("fs");
 
 var boxesId=[];
 var boxes=[];
 var artID=[];
 var foundID = false;
-var base = "http://lotrando.fit.vutbr.cz:8401/service/artifact/item/r:";
-var artifact = "http://lotrando.fit.vutbr.cz:8400/service/artifact";
 var pageWidth;
 var pageHeight;
 var tree=[];
@@ -14,7 +15,11 @@ var boxTree=[];
 var target;
 var target_element;
 var last_active;
+var selected_box;
 
+const create= "https://layout.fit.vutbr.cz/api/r/12425e9f-6cdd-4700-8e35-6a4c6504a258/artifact/create";
+const base = "https://layout.fit.vutbr.cz/api/r/12425e9f-6cdd-4700-8e35-6a4c6504a258/artifact/item/r:";
+const artifact = "https://layout.fit.vutbr.cz/api/r/12425e9f-6cdd-4700-8e35-6a4c6504a258/artifact";
 
 /*var box={
     id: "",
@@ -41,6 +46,70 @@ var last_active;
     type:""
 }*/
 
+begin();
+
+function showModal(){
+    var modal = document.getElementById("myModal");
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("newArt");
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal 
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+var submit = document.getElementById("submitBtn");
+
+submit.onclick = function(event){
+    var url = document.getElementById("url").value;
+    var widht = document.getElementById("width").value;
+    var height = document.getElementById("height").value;
+    if(document.getElementById("gridRadios1").checked){
+       var service="FitLayout.Puppeteer";
+    }
+    else{
+        var service="FitLayout.CSSBox"
+    } 
+    
+    const data = {
+        "params": {
+            "width": widht,
+            "height": height,
+            "url": url
+        },
+        "serviceId": service
+    };
+    fetch(create,{
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+
+.catch((error) => {
+  console.error('Error:', error);
+});
+
+modal.style.display = "none";
+//location.reload()
+//begin();
+    }
+}
 
 
 function main(){
@@ -49,7 +118,7 @@ function main(){
 
     boxes.sort(function(a, b){
         return a.documentOrder - b.documentOrder;
-    })
+    });
     
     const view = document.getElementById("view");
     view.style.width = pageWidth + "px";
@@ -67,15 +136,13 @@ function main(){
              border-left:${ boxes[i].borderL.borderWidth}px ${ boxes[i].borderL.borderStyle } #${ boxes[i].borderL.borderColor };
              border-right:${ boxes[i].borderR.borderWidth}px ${ boxes[i].borderR.borderStyle } #${ boxes[i].borderR.borderColor };
              border-top:${ boxes[i].borderT.borderWidth}px ${ boxes[i].borderT.borderStyle } #${ boxes[i].borderT.borderColor };
-             border-bottom:${ boxes[i].borderB.borderWidth}px ${ boxes[i].borderB.borderStyle } #${ boxes[i].borderB.borderColor };">
+             border-bottom:${ boxes[i].borderB.borderWidth}px ${ boxes[i].borderB.borderStyle } #${ boxes[i].borderB.borderColor };
+             white-space: nowrap;">
             ${ boxes[i].text }
             </box-element>
              `;
              view.appendChild(d);
-            
-            
-         //    }
-       //  }
+
         
      }
      boxTreeMaker();
@@ -83,7 +150,7 @@ function main(){
      view.classList.toggle("visibility");
      view.addEventListener("click", function(event){
          console.log(event.target.id + "_node");
-         clickFunction(event.target.id + "_node", event.target.id);
+         clickFunction(event.target.id + "_node", event.target.id,"box");
      })
 
 }
@@ -154,52 +221,17 @@ function artifacts(data){
 }
 function box_list(boxes_list){  
     const box_ul = document.getElementById("myUL2");
+    console.log("BOXES LIST: ");
+    console.log(boxes_list);
+    main_recursion(boxes_list[0],box_ul.id,"box");
 
-    
-
-    boxes_list.forEach(function(node){
-        /*li.addEventListener("click",function(event){
-            target_element = document.getElementById(event.target.id);
-            
-        });*/
-
-        var li = document.createElement('li');
-       target_element = li;
-       
-        box_ul.appendChild(li);
-
-        if(node.kids){
-            var span = document.createElement('span');
-            span.setAttribute("class", "caret");
-            span.setAttribute("id",node.id+"_node");
-            span.innerHTML = node.id;
-            li.appendChild(span);
-
-            var ul2=document.createElement('ul');
-            ul2.setAttribute("class", "nested")
-            li.appendChild(ul2);
-            node.kids.forEach(function(kid){
-                var kidLi = document.createElement('li');
-                kidLi.setAttribute("id",kid+"_node");
-                kidLi.innerHTML = kid;
-                ul2.appendChild(kidLi);
-            })
-            
-        }
-        else{
-            var span = document.createElement('span');
-            span.innerHTML = node.id;
-            li.appendChild(span);
-        }
-
-    });
-
-    box_ul.addEventListener("click", function(event) {    
-            clickFunction(event.target.id,event.target.innerHTML);  
-    });
     var toggler = document.getElementsByClassName("caret");
     var i;
 
+    box_ul.addEventListener("click", function(event) {    
+        clickFunction(event.target.id,event.target.innerHTML,"box");  
+    });
+   
     for (i = 0; i < toggler.length; i++) {
     toggler[i].addEventListener("click", function() {
     this.parentElement.querySelector(".nested").classList.toggle("active");
@@ -209,60 +241,147 @@ function box_list(boxes_list){
       
 }
 
-
-function clickFunction(listid,boxid){       
-            target_element.classList.remove("highlight");
-            target_element = document.getElementById(listid);
-            target_element.classList.add("highlight");  
-
-            showBoxInfo(boxid);
+function main_recursion(Element,box,list){
+    console.log(Element);
+    if(Element.kids){   
+        parent(Element,box,list);
+    }
+    else{
+        child(Element,box,list);
+        
+    }
 }
 
+function parent(Element,box,list){
+    var li = document.createElement('li');
+    li.setAttribute("class","position-relative");
+    var span = document.createElement('span');
+    span.setAttribute("class", "caret");
+    span.setAttribute("id",Element.id+"_node");
+    span.textContent = Element.id;
+    li.appendChild(span);
 
-function list(){
-    treeMaker();
-    const list = document.getElementById("list");
+    if(list == 'art'){
+        var delete_btn = document.createElement('span');
+        delete_btn.setAttribute("id",Element.id+"_delete");
+        delete_btn.setAttribute("class","position-absolute end-0");
+        delete_btn.innerHTML = "&#10060";
+        var segment_btn = document.createElement('span');
+        segment_btn.setAttribute("id",Element.id+"_segment");
+        segment_btn.setAttribute("class","position-absolute end-50");
+        segment_btn.innerHTML = "SEG";
+        li.appendChild(segment_btn);
+        li.appendChild(delete_btn);
+    }
+    
+    
     
 
     var ul=document.createElement('ul');
-    ul.setAttribute("id", "myUL")
-    
-    list.appendChild(ul);
-    tree.forEach(function(node){
-        var li = document.createElement('li');
-        last_active = li;
-        ul.appendChild(li);
-        if(node.kids[0]){
-            var span = document.createElement('span');
-            span.setAttribute("class", "caret arts");
-            span.innerHTML = node.id;
-            li.appendChild(span);
+            ul.setAttribute("class", "nested");
+            ul.setAttribute("id",Element.id+"_ul");
+            li.appendChild(ul);
+        document.getElementById(box).appendChild(li);        
+
+    Element.kids.forEach(function(kid){
+        if(result = boxTree.find( ({ id }) => id === kid)){
+           parent(result,ul.id,list); 
         }
         else{
-            var span = document.createElement('span');
-            span.innerHTML = node.id;
-            li.appendChild(span);
-        }
-
-        
-        
-        if(node.kids[0]){ 
-            var ul2=document.createElement('ul');
-            ul2.setAttribute("class", "nested arts")
-            li.appendChild(ul2);
-            node.kids.forEach(function(kid){
-                var kidLi = document.createElement('li');
-                kidLi.innerHTML = kid;
-                ul2.appendChild(kidLi);
-        });
+            child(kid,ul,list);
         }
         
     });
-    ul.addEventListener("click", function(event) {
-    last_active.classList.remove("highlight");
-    last_active = event.target;
-    event.target.classList.add("highlight");
-    target = event.target.innerHTML; 
+        
+}
+
+function child(Element,box,list){
+    var kidLi = document.createElement('li');
+    kidLi.setAttribute("class","position-relative");
+    kidLi.setAttribute("id",Element+"_node");
+    kidLi.textContent = Element;
+    if(list == 'art'){
+        var delete_btn = document.createElement('span');
+        delete_btn.setAttribute("id",Element+"_delete");
+        delete_btn.setAttribute("class","end-0");
+        delete_btn.setAttribute("class","position-absolute end-0");
+        delete_btn.textContent = "&#10060";
+        kidLi.appendChild(delete_btn);
+    }
+    
+    box.appendChild(kidLi);
+}
+
+
+function clickFunction(listid,boxid,list){      
+        if(list == "box"){ 
+            if(target_element){
+                target_element.classList.remove("highlight");
+            }
+            if(selected_box){
+                selected_box.classList.remove("selected");
+            }
+            selected_box = document.getElementById(boxid);
+            selected_box.classList.add("selected");
+            target_element = document.getElementById(listid);
+            target_element.classList.add("highlight");
+            var parent = target_element.parentElement;
+            while(parent != document.getElementById("myUL2")){
+                console.log(parent.id);
+                parent.classList.add("active");
+                parent = parent.parentElement;
+
+            }
+            target_element.scrollIntoView();
+
+            showBoxInfo(boxid);
+        }
+        else{
+            target = event.target.innerHTML; 
+            if(listid.includes("_delete")){
+                const id = listid.replace("_delete","");            
+                const arturl = base + id;
+                console.log("Fetch DELETE to: " + arturl);
+               fetch(arturl, {
+                method: 'DELETE',
+            })
+.then(res => res.text()) // or res.json()
+.then(res => console.log(res))
+
+//location.reload()
+            }
+            else if(listid.includes("_segment")){
+                const id = listid.replace("_segment","");            
+                const parentIri = "http://fitlayout.github.io/resource/" + id;
+
+                const data = {
+                    "params": {
+                        "pDoC": 9
+                    },
+                        "serviceId": "FitLayout.VIPS",
+                        "parentIti": parentIri
+                    };
+                    
+                    fetch(create,{
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(response => response.json())
+                    .catch((error) => {
+                         console.error('Error:', error);
+                    });
+                    //location.reload()
+            }
+            else{
+            if(last_active){
+                last_active.classList.remove("highlight");
+            }
+            last_active = document.getElementById(listid);
+
+            last_active.classList.add("highlight");  
+
+            
     boxes = [];
     boxTree = [];
     //console.log(boxes);
@@ -273,6 +392,19 @@ function list(){
     
     document.getElementById("loading").style.visibility = "visible";
     getArt(target);
+        }
+    }
+}
+
+
+function list(){
+    treeMaker();
+        
+    const box_ul = document.getElementById("myUL");
+    tree.forEach(node => main_recursion(node,box_ul.id,"art"));
+
+    box_ul.addEventListener("click", function(event) {
+    clickFunction(event.target.id,0,"art");
     });
     var toggler = document.getElementsByClassName("caret");
     var i;
@@ -287,30 +419,31 @@ function list(){
 }
 
 function getArt(target){
-const artParser = new JsonLdParser();
-artParser
-  .on('data', saveObject)
-  .on('error', console.error)
-  .on('end', main);
+    const artParser = new JsonLdParser();
+    artParser
+    .on('data', saveObject)
+    .on('error', console.error)
+    .on('end', main);
 
-url = base + target;
+    url = base + target;
 
-artID.forEach(function(art){
-    
-    if(art.id == target && art.parentID != null){
-        url = base + art.parentID
-    }
-})
-console.log(url);
+    artID.forEach(function(art){
+        
+        if(art.id == target && art.parentID != null){
+            url = base + art.parentID
+        }
+    })
+    console.log("GET: " + url);
 
-fetch(url)
-.then(function(body){
-    return body.text();
-  }).then(function(data) {
-    
-    artParser.write(data);
-    artParser.end();
-  });
+    fetch(url)
+    .then(function(body){
+        return body.text();
+    }).then(function(data) {
+        console.log(data);
+        artParser.write(data);
+        artParser.end();
+    });
+    console.log("FETCHING DONE");
 }
 
 function showBoxInfo(id){
@@ -408,42 +541,45 @@ function showBoxInfo(id){
         </tr>
         <tr>
           <td>Border left</td>
-          <td>${foundBox.borderL.borderWidth}px ${foundBox.borderL.borderStyle} ${foundBox.borderL.borderColor}</td>
+          <td>${foundBox.borderL.borderWidth}px ${foundBox.borderL.borderStyle} #${foundBox.borderL.borderColor}</td>
         </tr>
         <tr>
           <td>Border top</td>
-          <td>${foundBox.borderT.borderWidth}px ${foundBox.borderT.borderStyle} ${foundBox.borderT.borderColor}</td>
+          <td>${foundBox.borderT.borderWidth}px ${foundBox.borderT.borderStyle} #${foundBox.borderT.borderColor}</td>
         </tr>
         <tr>
           <td>Border right</td>
-          <td>${foundBox.borderR.borderWidth}px ${foundBox.borderR.borderStyle} ${foundBox.borderR.borderColor}</td>
+          <td>${foundBox.borderR.borderWidth}px ${foundBox.borderR.borderStyle} #${foundBox.borderR.borderColor}</td>
         </tr>
         <tr>
           <td>Border bottom</td>
-          <td>${foundBox.borderB.borderWidth}px ${foundBox.borderB.borderStyle} ${foundBox.borderB.borderColor}</td>
+          <td>${foundBox.borderB.borderWidth}px ${foundBox.borderB.borderStyle} #${foundBox.borderB.borderColor}</td>
         </tr>
        
       </table>`
 }
 
 function boxTreeMaker(){
+    console.log(boxes);
     var result;
     boxes.forEach(function(box){
-    if(box.type == "Box"){
+    if(box.type == "Box" || box.type == "Border"){
+        
         if(box.isChildOf){
+            
           if(result = boxTree.find( ({ id }) => id === box.isChildOf)){
                 result.kids.push(box.id);
-          }
-          else{
+
               var node = {
-              id: box.isChildOf,
-              kids:[box.id],
+              id: box.id,
+              kids:[],
             }
             boxTree.push(node);
           }
         }
-        else if(!box.isChildOf){
+        else if(box.isChildOf == null){
             if(result = boxTree.find( ({ id }) => id === box.id)){
+                console.log(box.id);
                 return;
           }
           else{
@@ -456,7 +592,8 @@ function boxTreeMaker(){
         }
         }
      }) 
-    console.log(boxTree);
+     console.log(boxTree);
+     console.log(boxes);
     }
       
 
@@ -486,8 +623,9 @@ console.log(tree);
 }
 
 function saveObject(data){
-    //console.log(data);
     
+    console.log("SAVE DATA");
+
     var object = data.object.value;
 
     if(object.includes('width=')){
@@ -510,6 +648,8 @@ function saveObject(data){
 
     var borderS = "";
 
+    console.log("Console log: " + value);
+    
     if(id.includes("Btop")){
         id = id.replace('Btop','');
         borderS = "top";
@@ -527,7 +667,7 @@ function saveObject(data){
         borderS = "right";
     }
 
-    if(value== "Box"){
+    if(value == "Box"){
         boxesId.push(id);
     }
 
@@ -775,6 +915,10 @@ function saveObject(data){
                     }
 
             switch (type) {
+                case "label":
+                    O.label = value;
+                    break;
+
                 case "backgroundColor":
                     O.backgroundColor = value;                  
                     break;
@@ -876,22 +1020,26 @@ function saveObject(data){
         foundID = false;
 }
 
+function begin(){
+    const myParser = new JsonLdParser();
 
-const myParser = new JsonLdParser();
-
-myParser
+    myParser
   .on('data', artifacts)
   .on('error', console.error)
   .on('end', list);
-
 
 fetch(artifact)
 .then(function(body){
     return body.text();
   }).then(function(data) {
-    
+
     myParser.write(data);
     myParser.end();
   });
+
+showModal();
+}
+
+
 
 module.exports = [boxes];
