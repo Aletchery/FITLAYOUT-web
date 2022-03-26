@@ -2,7 +2,7 @@
 //Adam Sevcik 2022
 
 const JsonLdParser = require("jsonld-streaming-parser").JsonLdParser;
-//const fs = require("fs");
+
 
 var boxesId=[];
 var boxes=[];
@@ -17,9 +17,43 @@ var target_element;
 var last_active;
 var selected_box;
 
-const create= "https://layout.fit.vutbr.cz/api/r/12425e9f-6cdd-4700-8e35-6a4c6504a258/artifact/create";
-const base = "https://layout.fit.vutbr.cz/api/r/12425e9f-6cdd-4700-8e35-6a4c6504a258/artifact/item/r:";
-const artifact = "https://layout.fit.vutbr.cz/api/r/12425e9f-6cdd-4700-8e35-6a4c6504a258/artifact";
+var id = "12425e9f-6cdd-4700-8e35-6a4c6504a258"
+
+var create= "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/create";
+var base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
+var artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
+var query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
+
+
+const fetchArts = () => {
+
+    console.log("Fetching arts!");
+    artID = [];
+    console.log(artID);
+
+    const myParser = new JsonLdParser();
+    myParser
+        .on('data', artifacts)
+        .on('error', console.error)
+        .on('end', list);
+
+fetch(artifact)
+  .then( body => {
+      if(body.ok) 
+      return body.text();
+      else {
+          artifacts(null);  
+      }
+  })
+  .then(data => {  
+          console.log(data);
+          myParser.write(data);
+          myParser.end();   
+  })
+}
+
+fetchArts();
+
 
 /*var box={
     id: "",
@@ -46,39 +80,52 @@ const artifact = "https://layout.fit.vutbr.cz/api/r/12425e9f-6cdd-4700-8e35-6a4c
     type:""
 }*/
 
-begin();
 
-function showModal(){
-    var modal = document.getElementById("myModal");
+const modal = document.getElementById("artModal");
+const queryModal = document.getElementById("queryModal")
 
-    // Get the button that opens the modal
-    var btn = document.getElementById("newArt");
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close")[0];
+// Get the button that opens the modal
+var artBtn = document.getElementById("newArt");
+var queryBtn = document.getElementById("newQuery");
+// Get the <span> element that closes the modal
+var closeArt = document.getElementById("closeNewArt");
+var closeQuery = document.getElementById("closeQuery");
+
 
 // When the user clicks the button, open the modal 
-btn.onclick = function() {
+artBtn.onclick = function() {
   modal.style.display = "block";
 }
 
+queryBtn.onclick = function() {
+    queryModal.style.display = "block";
+}
+
 // When the user clicks on <span> (x), close the modal
-span.onclick = function() {
+closeArt.onclick = function() {
   modal.style.display = "none";
+}
+
+closeQuery.onclick = function() {
+    queryModal.style.display = "none";
 }
 
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
-  if (event.target == modal) {
+  if (event.target == modal || event.target == queryModal) {
     modal.style.display = "none";
+    queryModal.style.display = "none";
   }
 }
 
+// Add new art
 var submit = document.getElementById("submitBtn");
 
-submit.onclick = function(event){
+submit.onclick = function(){
     var url = document.getElementById("url").value;
     var widht = document.getElementById("width").value;
     var height = document.getElementById("height").value;
+
     if(document.getElementById("gridRadios1").checked){
        var service="FitLayout.Puppeteer";
     }
@@ -100,17 +147,76 @@ submit.onclick = function(event){
         headers: { 'Content-Type': 'application/json' }
     })
     .then(response => response.json())
+    .then(response => {
+        console.log(response);
+        fetchArts()})
+    .catch( error => {
+        console.error('Error:', error);
+    });
 
-.catch((error) => {
-  console.error('Error:', error);
-});
+    modal.style.display = "none";
 
-modal.style.display = "none";
-//location.reload()
-//begin();
     }
-}
 
+
+
+// sparql 
+
+var submitQuery = document.getElementById("submitQuery");
+
+submitQuery.onclick = function(){
+    var queryParam = document.getElementById("query").value;
+        
+    fetch(query,{
+        method: 'POST',
+        body: `PREFIX fl: <http://fitlayout.github.io/ontology/fitlayout.owl#>
+        PREFIX r: <http://fitlayout.github.io/resource/>
+        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX box: <http://fitlayout.github.io/ontology/render.owl#>
+        PREFIX segm: <http://fitlayout.github.io/ontology/segmentation.owl#>
+        
+        SELECT ?iri WHERE {  
+          ?iri `+ queryParam +`
+        }
+        ORDER BY ?time
+        
+        `,
+        headers: { 'Content-Type': 'application/sparql-query' }
+    })
+    .then(response => response.json())
+    .then(response => console.log(response))
+    .catch( error => {
+        console.error(error);
+    });
+
+    queryModal.style.display = "none";
+
+   //fetchArts(); 
+    }
+
+// change repository
+
+var repo = document.getElementById("set_repository");
+
+repo.onclick = function() {
+    
+    var repo_id = document.getElementById("repository");
+    new_id = repo_id.value;
+    if(new_id !== id){
+        artID = [];
+        document.getElementById("myUL").innerHTML = "";
+        id = new_id;
+        console.log("Changing repo id to: " + id);
+        create= "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/create";
+        base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
+        artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
+        query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
+        console.log(create);
+        fetchArts();
+    }
+    
+}
 
 function main(){
 
@@ -173,6 +279,7 @@ function position(){
 
 function artifacts(data){
 
+    if(data != null){
     var predicate = data.predicate.value;
     var subject = data.subject.value;
     
@@ -217,12 +324,17 @@ function artifacts(data){
             
             artID.push(art);
         }
+        }
+    }
+    else {
+        var list = document.getElementById("list");
+
+        list.innerHTML = "Empty or wrong repository!"
     }
 }
 function box_list(boxes_list){  
     const box_ul = document.getElementById("myUL2");
-    console.log("BOXES LIST: ");
-    console.log(boxes_list);
+    
     main_recursion(boxes_list[0],box_ul.id,"box");
 
     var toggler = document.getElementsByClassName("caret");
@@ -242,7 +354,6 @@ function box_list(boxes_list){
 }
 
 function main_recursion(Element,box,list){
-    console.log(Element);
     if(Element.kids){   
         parent(Element,box,list);
     }
@@ -254,7 +365,8 @@ function main_recursion(Element,box,list){
 
 function parent(Element,box,list){
     var li = document.createElement('li');
-    li.setAttribute("class","position-relative");
+    li.setAttribute("class","text-center");
+    li.setAttribute("id",Element.id);
     var span = document.createElement('span');
     span.setAttribute("class", "caret");
     span.setAttribute("id",Element.id+"_node");
@@ -264,14 +376,15 @@ function parent(Element,box,list){
     if(list == 'art'){
         var delete_btn = document.createElement('span');
         delete_btn.setAttribute("id",Element.id+"_delete");
-        delete_btn.setAttribute("class","position-absolute end-0");
+        delete_btn.setAttribute("class","end-0 float-right");
         delete_btn.innerHTML = "&#10060";
         var segment_btn = document.createElement('span');
         segment_btn.setAttribute("id",Element.id+"_segment");
-        segment_btn.setAttribute("class","position-absolute end-50");
+        segment_btn.setAttribute("class","float-right mr-20");
         segment_btn.innerHTML = "SEG";
-        li.appendChild(segment_btn);
         li.appendChild(delete_btn);
+        li.appendChild(segment_btn);
+        
     }
     
     
@@ -294,6 +407,7 @@ function parent(Element,box,list){
     });
         
 }
+
 
 function child(Element,box,list){
     var kidLi = document.createElement('li');
@@ -333,22 +447,26 @@ function clickFunction(listid,boxid,list){
 
             }
             target_element.scrollIntoView();
+            
 
             showBoxInfo(boxid);
         }
         else{
             target = event.target.innerHTML; 
             if(listid.includes("_delete")){
-                const id = listid.replace("_delete","");            
+                const id = listid.replace("_delete","");
+
                 const arturl = base + id;
                 console.log("Fetch DELETE to: " + arturl);
-               fetch(arturl, {
+                fetch(arturl, {
                 method: 'DELETE',
             })
-.then(res => res.text()) // or res.json()
-.then(res => console.log(res))
+            .then(res => res.text()) // or res.json()
+            .then(res => console.log(res));
+            
+            var deletedLi = document.getElementById(id);
+            deletedLi.remove();
 
-//location.reload()
             }
             else if(listid.includes("_segment")){
                 const id = listid.replace("_segment","");            
@@ -374,24 +492,28 @@ function clickFunction(listid,boxid,list){
                     //location.reload()
             }
             else{
-            if(last_active){
-                last_active.classList.remove("highlight");
-            }
+            
+            if(last_active != document.getElementById(listid)){
+                if(last_active){
+                    last_active.classList.remove("highlight");
+                }
+                console.log(last_active)
             last_active = document.getElementById(listid);
 
             last_active.classList.add("highlight");  
 
             
-    boxes = [];
-    boxTree = [];
-    //console.log(boxes);
-    document.getElementById("bottom").innerHTML = "";
-    document.getElementById("myUL2").innerHTML = "";
-    document.getElementById("view").innerHTML = "";
-    document.getElementById("view").classList.toggle("visibility");
-    
-    document.getElementById("loading").style.visibility = "visible";
-    getArt(target);
+            boxes = [];
+            boxTree = [];
+            //console.log(boxes);
+            document.getElementById("bottom").innerHTML = "";
+            document.getElementById("myUL2").innerHTML = "";
+            document.getElementById("view").innerHTML = "";
+            document.getElementById("view").classList.toggle("visibility");
+            
+            document.getElementById("loading").style.visibility = "visible";
+            getArt(target);
+            }
         }
     }
 }
@@ -400,21 +522,23 @@ function clickFunction(listid,boxid,list){
 function list(){
     treeMaker();
         
-    const box_ul = document.getElementById("myUL");
-    tree.forEach(node => main_recursion(node,box_ul.id,"art"));
+    const art_ul = document.getElementById("myUL");
+    tree.forEach(node => main_recursion(node, art_ul.id, "art"));
 
-    box_ul.addEventListener("click", function(event) {
+    art_ul.addEventListener("click", function(event) {
     clickFunction(event.target.id,0,"art");
     });
     var toggler = document.getElementsByClassName("caret");
-    var i;
-
-    for (i = 0; i < toggler.length; i++) {
+  
+    for (var i = 0; i < toggler.length; i++) {
     toggler[i].addEventListener("click", function() {
     this.parentElement.querySelector(".nested").classList.toggle("active");
     this.classList.toggle("caret-down");
   });
 }
+    if (art_ul.innerHTML.trim == ""){
+        art_ul.innerHTML = "Empty or wrong repository"
+    }
     
 }
 
@@ -435,7 +559,10 @@ function getArt(target){
     })
     console.log("GET: " + url);
 
-    fetch(url)
+    fetch(url,{
+        method: 'GET',
+        headers: { 'Accept': 'application/ld+json' }
+    })
     .then(function(body){
         return body.text();
     }).then(function(data) {
@@ -443,12 +570,12 @@ function getArt(target){
         artParser.write(data);
         artParser.end();
     });
-    console.log("FETCHING DONE");
+    
 }
 
 function showBoxInfo(id){
 
-    console.log(id);
+    //console.log(id);
     var foundBox;
     boxes.forEach(function(box){
         if(box.id == id){
@@ -560,7 +687,7 @@ function showBoxInfo(id){
 }
 
 function boxTreeMaker(){
-    console.log(boxes);
+    
     var result;
     boxes.forEach(function(box){
     if(box.type == "Box" || box.type == "Border"){
@@ -592,8 +719,8 @@ function boxTreeMaker(){
         }
         }
      }) 
-     console.log(boxTree);
-     console.log(boxes);
+     //console.log(boxTree);
+     //console.log(boxes);
     }
       
 
@@ -619,12 +746,10 @@ function treeMaker(){
     }
     
 }
-console.log(tree);
+//console.log(tree);
 }
 
 function saveObject(data){
-    
-    console.log("SAVE DATA");
 
     var object = data.object.value;
 
@@ -647,8 +772,6 @@ function saveObject(data){
     var id = subject.substr(lastIndexS,subject.lenght);
 
     var borderS = "";
-
-    console.log("Console log: " + value);
     
     if(id.includes("Btop")){
         id = id.replace('Btop','');
@@ -839,7 +962,7 @@ function saveObject(data){
                         boxes[i].isChildOf = target + "#" + value;
                         break;
                     
-                    case "hasText":
+                    case "text":
                         boxes[i].text = value;
                         break;
 
@@ -1019,27 +1142,3 @@ function saveObject(data){
 
         foundID = false;
 }
-
-function begin(){
-    const myParser = new JsonLdParser();
-
-    myParser
-  .on('data', artifacts)
-  .on('error', console.error)
-  .on('end', list);
-
-fetch(artifact)
-.then(function(body){
-    return body.text();
-  }).then(function(data) {
-
-    myParser.write(data);
-    myParser.end();
-  });
-
-showModal();
-}
-
-
-
-module.exports = [boxes];
