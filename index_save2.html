@@ -1,0 +1,139 @@
+<!-- index.html -->
+<!-- Adam Sevcik 2022 -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>FITLayout</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+  <body id ="body">
+    <!-- Top nav-->
+    <nav class="navbar navbar-dark bg-dark">
+        <button class="btn btn-outline-success me-2" type="button" id="newArt">Add artifact</button>
+        <div class="form-inline">
+          <div class="navbar-brand text-success">FitLayout</div> 
+          <input class="form-control mr-sm-2" type="search" placeholder="Repository id" value="12425e9f-6cdd-4700-8e35-6a4c6504a258" id="repository" >
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="set_repository">Switch repository</button>
+        </div>
+          <div class="form-inline">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="removeQuery" style="display: none;">Remove search</button>
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="newQuery">Search</button>
+          </div>
+      </nav>
+   
+      <div class="row">
+    <!-- Left panel -->
+        <div class="col panel text-dark border border-dark nopadding" id="list">      
+          <ul id="myUL"></ul>
+        </div>
+    <!-- Middle -->
+        <div class="col-7 middle nopadding">
+          <h1 id="loading" style="display: none;"><div class="loader"></div></h1>
+            <div id="view"></div>
+           
+        </div>
+    <!-- Right Panel -->
+        <div class=" col panel text-dark">
+          <div class="top border border-dark" id="top">
+            <div id="box_list">
+              <ul id="myUL2">
+    
+              </ul>
+            </div>
+          </div>
+          <div class="bottom border border-dark" id="bottom">
+
+          </div>
+        </div>
+      </div>
+
+      <footer class="bg-light text-center text-lg-start">
+        <!-- Copyright -->
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+          © 2020 Copyright:
+          <a class="text-dark" href="https://mdbootstrap.com/">MDBootstrap.com</a>
+        </div>
+        <!-- Copyright -->
+      </footer>
+
+
+      <div id="queryModal" class="modal modal-dark">
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close" id="closeQuery">&times;</span>
+          <form>
+        <div class="form-group row">
+          <label for="query" class="col-sm-2 col-form-label">Query</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="query" placeholder="query">
+          </div>
+        </div>
+        <input type ="button" class="btn btn-success" id="submitQuery" value="Create">
+          </form>
+          </div>
+      </div>
+
+
+    <!-- Modal -->
+    <div id="artModal" class="modal modal-dark">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close" id="closeNewArt">&times;</span>
+          <form>
+            <div class="form-group row">
+              <label for="url" class="col-sm-2 col-form-label">Url</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="url" placeholder="url">
+              </div>
+            </div>
+            
+            <div class="form-group row">
+              <label for="width" class="col-sm-2 col-form-label">Width</label>
+              <div class="col-sm-10">
+                <input type="number" class="form-control" id="width" value="1920" min="1024" max="1920" placeholder="width">
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label for="height" class="col-sm-2 col-form-label">Height</label>
+              <div class="col-sm-10">
+                <input type="number" class="form-control" id="height" value="1080" min="768" max="1080" placeholder="height">
+              </div>
+            </div>
+
+            
+
+            <fieldset class="form-group">
+              <div class="row">
+                <legend class="col-form-label col-sm-2 pt-0">Service</legend>
+                <div class="col-sm-10">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" checked >
+                    <label class="form-check-label" for="gridRadios1">
+                      FitLayout.Puppeteer
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2" >
+                    <label class="form-check-label" for="gridRadios2">
+                      FitLayout.CSSBox
+                    </label>
+                  </div>
+               </div> 
+               </div>
+               </fieldset>
+
+            <input type ="button" class="btn btn-success" id="submitBtn" value="Create">
+          </form>
+        </div>
+      </div>
+
+      <script src="bundle.js"></script>  
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    </body>
+</html>

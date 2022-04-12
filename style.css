@@ -1,0 +1,226 @@
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+#page-content {
+  flex: 1 0 auto;
+}
+
+/* Other Classes for Page Styling */
+
+
+.row {
+    height: 100%;
+}
+
+.top {
+    height: 50%;
+    overflow: auto;
+  }
+  .bottom {
+    height: 50%;
+    overflow: auto;
+  }
+
+  .panel {
+    background-color: #e9ecef;
+    padding-left: 0px !important;
+    }
+
+footer {
+    color: white;
+}
+
+.middle {
+    overflow: auto;
+  }
+
+.modal {
+display: none; /* Hidden by default */
+position: fixed; /* Stay in place */
+z-index: 1; /* Sit on top */
+padding-top: 100px; /* Location of the box */
+left: 0;
+top: 0;
+width: 100%; /* Full width */
+height: 100%; /* Full height */
+overflow: auto; /* Enable scroll if needed */
+background-color: rgb(0,0,0); /* Fallback color */
+background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+background-color: #fefefe;
+margin: auto;
+padding: 20px;
+border: 1px solid #888;
+width: 50%;
+}
+
+/* The Close Button */
+.close {
+color: #aaaaaa;
+float: right;
+font-size: 28px;
+font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+color: #000;
+text-decoration: none;
+cursor: pointer;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+ }
+
+
+.visibility {
+visibility: hidden;
+}
+
+.panel {
+background-color: #e9ecef;
+padding-left: 0px !important;
+}
+
+#loading{
+  margin-top: 40vh;
+}
+
+.middle {
+  overflow: auto;
+}
+
+.right {
+ float: left;
+ width: 20%;
+ height: 100vh;
+ 
+}
+.top {
+  height: 50vh;
+  width: 100%;
+  overflow: auto;
+}
+.bottom {
+  height: 50vh;
+  overflow: auto;
+  width: 100%;
+}
+.row:after {
+ content: "";
+ display: table;
+ clear: both;
+}
+
+
+
+#list {
+ font-size: 30px;
+ overflow: auto;
+}
+
+table {
+padding-top: 10px;
+text-align: center;
+font-size: 20px;
+width: 100%;
+border: 1px solid black;
+border-collapse: collapse;
+}
+th, td {
+border: 1px solid black;
+border-collapse: collapse;
+}
+
+box-element :hover {
+outline: 2px solid orange;
+cursor: pointer;
+}
+
+.highlight {
+color: #5cb85c;
+}
+.selected {
+outline: 3px solid red;
+}
+
+.nopadding {
+padding: 0 !important;
+margin: 0 !important;
+}
+
+/*--------------------------------*/
+
+ul {
+ list-style-type: none;
+ list-style-position:inside;
+}
+li {
+cursor: pointer;
+
+}
+#myUL, #myUL2 {
+  padding-left: 15px;
+  padding-right: 15px;
+  overflow: auto;
+ }
+
+.caret {
+ cursor: pointer;
+ -webkit-user-select: none; /* Safari 3.1+ */
+ -moz-user-select: none; /* Firefox 2+ */
+ -ms-user-select: none; /* IE 10+ */
+ user-select: none;
+}
+
+.caret::before {
+ content: "\25B6";
+ color: black;
+ display: inline-block;
+ margin-right: 6px;
+}
+
+.caret-down::before {
+ -ms-transform: rotate(90deg); /* IE 9 */
+ -webkit-transform: rotate(90deg); /* Safari */
+ transform: rotate(90deg);  
+}
+
+.nested {
+ display: none;
+ margin-left: 5px;
+}
+
+.active {
+ display: block;
+}
+
+.loader {
+margin: auto;
+border: 16px solid #f3f3f3;
+border-radius: 50%;
+border-top: 16px solid #3498db;
+width: 120px;
+height: 120px;
+-webkit-animation: spin 2s linear infinite; /* Safari */
+animation: spin 2s linear infinite;
+}
+/* Safari */
+@-webkit-keyframes spin {
+0% { -webkit-transform: rotate(0deg); }
+100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}

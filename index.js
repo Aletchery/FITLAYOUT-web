@@ -6,6 +6,7 @@ const JsonLdParser = require("jsonld-streaming-parser").JsonLdParser;
 
 var boxesId=[];
 var boxes=[];
+var selectedBoxes=[];
 var artID=[];
 var foundID = false;
 var pageWidth;
@@ -16,6 +17,7 @@ var target;
 var target_element;
 var last_active;
 var selected_box;
+var activeArt;
 
 var id = "12425e9f-6cdd-4700-8e35-6a4c6504a258"
 
@@ -24,10 +26,12 @@ var base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
 var artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
 var query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
 
+fetchArts();
 
-const fetchArts = () => {
 
+function fetchArts() {
     console.log("Fetching arts!");
+
     artID = [];
     console.log(artID);
 
@@ -39,20 +43,19 @@ const fetchArts = () => {
 
 fetch(artifact)
   .then( body => {
-      if(body.ok) 
-      return body.text();
+      if(body.ok) {
+        return body.text();
+    }
       else {
           artifacts(null);  
       }
   })
-  .then(data => {  
-          console.log(data);
+  .then(data => {
+          artID=[];  
           myParser.write(data);
           myParser.end();   
   })
 }
-
-fetchArts();
 
 
 /*var box={
@@ -87,6 +90,7 @@ const queryModal = document.getElementById("queryModal")
 // Get the button that opens the modal
 var artBtn = document.getElementById("newArt");
 var queryBtn = document.getElementById("newQuery");
+var removeBtn = document.getElementById("removeQuery");
 // Get the <span> element that closes the modal
 var closeArt = document.getElementById("closeNewArt");
 var closeQuery = document.getElementById("closeQuery");
@@ -99,6 +103,15 @@ artBtn.onclick = function() {
 
 queryBtn.onclick = function() {
     queryModal.style.display = "block";
+}
+
+removeBtn.onclick = function() {
+    highlightArts();
+    highlightQuery();
+    
+    removeBtn.style.display = "none";
+
+    selectedBoxes = [];
 }
 
 // When the user clicks on <span> (x), close the modal
@@ -148,19 +161,22 @@ submit.onclick = function(){
     })
     .then(response => response.json())
     .then(response => {
+        if(response.status === "error"){
+            alert("Wrong URL!")
+        }
+        else{
         console.log(response);
-        fetchArts()})
-    .catch( error => {
-        console.error('Error:', error);
-    });
-
-    modal.style.display = "none";
-
-    }
+        fetchArts();}
+            });
+            
+        
+    modal.style.display = "none";   
+        }
 
 
 
-// sparql 
+
+//sparql 
 
 var submitQuery = document.getElementById("submitQuery");
 
@@ -185,14 +201,15 @@ submitQuery.onclick = function(){
         headers: { 'Content-Type': 'application/sparql-query' }
     })
     .then(response => response.json())
-    .then(response => console.log(response))
+    .then(response => selectBoxes(response))
     .catch( error => {
-        console.error(error);
+        alert("Wrong query!");
+        console.log(error);
     });
 
     queryModal.style.display = "none";
 
-   //fetchArts(); 
+   
     }
 
 // change repository
@@ -212,7 +229,7 @@ repo.onclick = function() {
         base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
         artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
         query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
-        console.log(create);
+        //console.log(create);
         fetchArts();
     }
     
@@ -230,6 +247,8 @@ function main(){
     view.style.width = pageWidth + "px";
     view.style.height = pageHeight + "px";
      
+    document.getElementById("loading").style.display = "none";
+
      //console.log(boxesId);
      for(var i = 0; i<boxes.length;i++){
             
@@ -259,6 +278,73 @@ function main(){
          clickFunction(event.target.id + "_node", event.target.id,"box");
      })
 
+     highlightQuery()
+
+}
+
+function getArtfromIRI(iri){
+    return iri.substring(iri.lastIndexOf('/')+1, iri.lastIndexOf('#'));
+}
+
+function getBoxfromIRI(iri){
+    return iri.substring(iri.lastIndexOf('/')+1, iri.lenght);
+}
+
+function selectBoxes(result){
+       
+    highlightQuery();
+    highlightArts();
+    console.log(result);
+    const boxes = result.results.bindings;
+
+    selectedBoxes = [];
+  
+    boxes.forEach( box => {
+        var art = getArtfromIRI(box.iri.value);
+        var ID = getBoxfromIRI(box.iri.value);
+       
+        var found = selectedBoxes.find(Element => Element.art === art);
+        if (found) {
+           found.boxes.push(ID);
+          }
+        else {
+            var selectedArt = {
+                art: art,
+                boxes: [ID]
+            }
+            selectedBoxes.push(selectedArt);
+        }         
+        });
+
+        if(selectedBoxes.length == 0){
+            alert("No boxes match this query!");
+            removeBtn.style.display = "none";
+        }
+        else(removeBtn.style.display = "block")
+        
+        console.log(selectedBoxes); 
+
+        highlightQuery();
+        highlightArts();
+
+}
+
+
+function highlightQuery(){
+
+    var found = selectedBoxes.find(Element => Element.art === activeArt);
+        if (found) {
+            found.boxes.forEach(box => {
+                document.getElementById(box).classList.toggle("selection");
+                document.getElementById(box + "_node").classList.toggle("selection");
+            });
+        }
+}
+
+function highlightArts(){
+    selectedBoxes.forEach(element => {
+        document.getElementById(element.art).classList.toggle("selection");
+    })
 }
 
 function position(){
@@ -279,6 +365,7 @@ function position(){
 
 function artifacts(data){
 
+    //console.log(data);
     if(data != null){
     var predicate = data.predicate.value;
     var subject = data.subject.value;
@@ -299,6 +386,7 @@ function artifacts(data){
                 art.parentID = parentId;
             }
         })
+        
         
         
     if(found == false){
@@ -329,7 +417,7 @@ function artifacts(data){
     else {
         var list = document.getElementById("list");
 
-        list.innerHTML = "Empty or wrong repository!"
+        alert("Empty or wrong repository!");
     }
 }
 function box_list(boxes_list){  
@@ -365,7 +453,6 @@ function main_recursion(Element,box,list){
 
 function parent(Element,box,list){
     var li = document.createElement('li');
-    li.setAttribute("class","text-center");
     li.setAttribute("id",Element.id);
     var span = document.createElement('span');
     span.setAttribute("class", "caret");
@@ -441,12 +528,16 @@ function clickFunction(listid,boxid,list){
             target_element.classList.add("highlight");
             var parent = target_element.parentElement;
             while(parent != document.getElementById("myUL2")){
-                console.log(parent.id);
+                //console.log(parent.id);
                 parent.classList.add("active");
                 parent = parent.parentElement;
 
             }
-            target_element.scrollIntoView();
+
+            console.log(target_element);
+            //document.getElementById(boxid).scrollIntoView();
+
+            //target_element.parentNode.scrollTop = target_element.offsetTop;
             
 
             showBoxInfo(boxid);
@@ -511,7 +602,8 @@ function clickFunction(listid,boxid,list){
             document.getElementById("view").innerHTML = "";
             document.getElementById("view").classList.toggle("visibility");
             
-            document.getElementById("loading").style.visibility = "visible";
+            document.getElementById("loading").style.display = "block";
+
             getArt(target);
             }
         }
@@ -523,6 +615,7 @@ function list(){
     treeMaker();
         
     const art_ul = document.getElementById("myUL");
+    art_ul.innerHTML = "";
     tree.forEach(node => main_recursion(node, art_ul.id, "art"));
 
     art_ul.addEventListener("click", function(event) {
@@ -543,13 +636,19 @@ function list(){
 }
 
 function getArt(target){
+    queryBtn.disabled = true;
+    artBtn.disabled = true;
+    repo.disabled = true;
+   
     const artParser = new JsonLdParser();
     artParser
-    .on('data', saveObject)
+    .on('data', saveArt)
     .on('error', console.error)
     .on('end', main);
 
     url = base + target;
+    activeArt = target;
+    console.log(activeArt);
 
     artID.forEach(function(art){
         
@@ -566,8 +665,13 @@ function getArt(target){
     .then(function(body){
         return body.text();
     }).then(function(data) {
-        console.log(data);
+        //console.log(data);
+ 
         artParser.write(data);
+        queryBtn.disabled = false;
+        artBtn.disabled = false;
+        repo.disabled = false;
+        
         artParser.end();
     });
     
@@ -706,7 +810,7 @@ function boxTreeMaker(){
         }
         else if(box.isChildOf == null){
             if(result = boxTree.find( ({ id }) => id === box.id)){
-                console.log(box.id);
+                //console.log(box.id);
                 return;
           }
           else{
@@ -749,11 +853,12 @@ function treeMaker(){
 //console.log(tree);
 }
 
-function saveObject(data){
-
+function saveArt(data){
+   
+    
     var object = data.object.value;
 
-    if(object.includes('width=')){
+    if(object.includes('width=') && object.includes('height=')){
   
     pageWidth = object.substr(object.indexOf('width=')+6, object.lenght);
     pageWidth = pageWidth.substr(0,pageWidth.indexOf(' '));
@@ -761,15 +866,18 @@ function saveObject(data){
     
     pageHeight = object.substr(object.indexOf('height=')+7, object.lenght);
     pageHeight = pageHeight.substr(0,pageHeight.indexOf(' '));
+
+    console.log(pageWidth + " " + pageHeight);
     
     }
+
     var lastIndexO = object.lastIndexOf('#')+1;
     var value = object.substr(lastIndexO,object.lenght);
    
 
     var subject = data.subject.value;
-    var lastIndexS = subject.lastIndexOf('/')+1;
-    var id = subject.substr(lastIndexS,subject.lenght);
+    var id = subject.substr(subject.lastIndexOf('/')+1,subject.lenght);
+  
 
     var borderS = "";
     
@@ -791,12 +899,14 @@ function saveObject(data){
     }
 
     if(value == "Box"){
+        //console.log(id);
         boxesId.push(id);
     }
 
-    var predicate = data.predicate.value;
-    var lastIndexP = predicate.lastIndexOf('#')+1;
-    var type = predicate.substr(lastIndexP,predicate.lenght);
+    var predicate = data.predicate.value; 
+    var type = predicate.substr(predicate.lastIndexOf('#')+1, predicate.lenght);
+
+    if(type == "pngImage") pageImg = object.value;
 
         for(var i = 0; i<boxes.length;i++){
             
