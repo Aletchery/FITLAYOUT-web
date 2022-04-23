@@ -1,139 +1,100 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const config = {
+    repo_id: "7d1a35b2-22dd-451f-9c6b-476c821b8c9b"
+   };
+   module.exports = config;
+},{}],2:[function(require,module,exports){
 //index.js
 //Adam Sevcik 2022
+// FitLayout web 
 
 const JsonLdParser = require("jsonld-streaming-parser").JsonLdParser;
+const id = require("./config.js").repo_id;  // Repository ID from config file
+document.getElementById("repository").value = id;
+document.getElementById("loading").style.display = "block";
 
+// Global variables.
+var boxesId = [];           // Array of IDs of boxes
+var boxes = [];             // Array of boxes
+var selectedBoxes = [];     // Array of selected boxes from querry
+var Arts = [];              // Array of artifacts    
+var boxTree = [];           // Tree of boxes
+var targetBox;              // Targeted box
+var last_active;            // Last selected artifact
+var selected_box;           // Selected box
+var activeArt;              // Currently selected artifact
+var lastID;                 // ID of last working repository
 
-var boxesId=[];
-var boxes=[];
-var artID=[];
-var foundID = false;
-var pageWidth;
-var pageHeight;
-var tree=[];
-var boxTree=[];
-var target;
-var target_element;
-var last_active;
-var selected_box;
-
-var id = "12425e9f-6cdd-4700-8e35-6a4c6504a258"
-
-var create= "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/create";
+// URLs to REST API.
+var create = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/create";
 var base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
 var artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
 var query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
 
-
-const fetchArts = () => {
-
-    console.log("Fetching arts!");
-    artID = [];
-    console.log(artID);
-
-    const myParser = new JsonLdParser();
-    myParser
-        .on('data', artifacts)
-        .on('error', console.error)
-        .on('end', list);
-
-fetch(artifact)
-  .then( body => {
-      if(body.ok) 
-      return body.text();
-      else {
-          artifacts(null);  
-      }
-  })
-  .then(data => {  
-          console.log(data);
-          myParser.write(data);
-          myParser.end();   
-  })
-}
-
-fetchArts();
-
-
-/*var box={
-    id: "",
-    backgroundColor: "",
-    posX: "",
-    posY: "",
-    widht: "",
-    height: "",
-    belongsTo:"",
-    color:"",
-    documentOrder:"",
-    fontFamily:"",
-    fontSize:"",
-    fontStyle:"",
-    fontWeight:"",
-    hasAttribute:"",
-    htmlTagName:"",
-    lineThrough:"",
-    underline:"",
-    visualHeight:"",
-    visualWidth:"",
-    visualX:"",
-    visualY:"",
-    type:""
-}*/
-
-
+// Modal windows
 const modal = document.getElementById("artModal");
 const queryModal = document.getElementById("queryModal")
 
-// Get the button that opens the modal
+// Navigation buttons
 var artBtn = document.getElementById("newArt");
 var queryBtn = document.getElementById("newQuery");
-// Get the <span> element that closes the modal
+var removeBtn = document.getElementById("removeQuery");
+
+// Modal closing buttons
 var closeArt = document.getElementById("closeNewArt");
 var closeQuery = document.getElementById("closeQuery");
 
-
-// When the user clicks the button, open the modal 
-artBtn.onclick = function() {
-  modal.style.display = "block";
+// Open modal window to create new artifact on click
+artBtn.onclick = function () {
+    modal.style.display = "block";
 }
 
-queryBtn.onclick = function() {
+// Open modal window to search boxes by querry on click
+queryBtn.onclick = function () {
     queryModal.style.display = "block";
 }
 
-// When the user clicks on <span> (x), close the modal
-closeArt.onclick = function() {
-  modal.style.display = "none";
+// Remove query search on click
+removeBtn.onclick = function () {
+    removeSearch();
 }
 
-closeQuery.onclick = function() {
+// When the user clicks on (x), close the modal
+closeArt.onclick = function () {
+    modal.style.display = "none";
+}
+
+// When the user clicks on (x), close the modal
+closeQuery.onclick = function () {
     queryModal.style.display = "none";
 }
 
 // When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == modal || event.target == queryModal) {
-    modal.style.display = "none";
-    queryModal.style.display = "none";
-  }
+window.onclick = function (event) {
+    if (event.target == modal || event.target == queryModal) {
+        modal.style.display = "none";
+        queryModal.style.display = "none";
+    }
 }
 
-// Add new art
+// New artifact submit button
 var submit = document.getElementById("submitBtn");
 
-submit.onclick = function(){
+// Add new art on click
+submit.onclick = function () {
+    // Get all information
     var url = document.getElementById("url").value;
     var widht = document.getElementById("width").value;
     var height = document.getElementById("height").value;
 
-    if(document.getElementById("gridRadios1").checked){
-       var service="FitLayout.Puppeteer";
+    if (document.getElementById("gridRadios1").checked) {
+        var service = "FitLayout.Puppeteer";
     }
-    else{
-        var service="FitLayout.CSSBox"
-    } 
-    
+    else {
+        var service = "FitLayout.CSSBox"
+    }
+
+    // Body of POST request
     const data = {
         "params": {
             "width": widht,
@@ -142,33 +103,36 @@ submit.onclick = function(){
         },
         "serviceId": service
     };
-    fetch(create,{
+    // Fetch request
+    fetch(create, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' }
     })
-    .then(response => response.json())
-    .then(response => {
-        console.log(response);
-        fetchArts()})
-    .catch( error => {
-        console.error('Error:', error);
-    });
+        .then(response => response.json())
+        .then(response => {
+            if (response.status === "error") {
+                alert("Wrong URL!")
+            }
+            else {
+                console.log(response);
+                fetchArts();
+            }
+        });
 
+    // Close window
     modal.style.display = "none";
+}
 
-    }
-
-
-
-// sparql 
-
+// Search querry submit button
 var submitQuery = document.getElementById("submitQuery");
 
-submitQuery.onclick = function(){
+// Serch by input query on click
+submitQuery.onclick = function () {
+    // Users query
     var queryParam = document.getElementById("query").value;
-        
-    fetch(query,{
+    // Fetch request
+    fetch(query, {
         method: 'POST',
         body: `PREFIX fl: <http://fitlayout.github.io/ontology/fitlayout.owl#>
         PREFIX r: <http://fitlayout.github.io/resource/>
@@ -178,414 +142,572 @@ submitQuery.onclick = function(){
         PREFIX segm: <http://fitlayout.github.io/ontology/segmentation.owl#>
         
         SELECT ?iri WHERE {  
-          ?iri `+ queryParam +`
+          ?iri `+ queryParam + `
         }
         ORDER BY ?time
         
         `,
         headers: { 'Content-Type': 'application/sparql-query' }
     })
-    .then(response => response.json())
-    .then(response => console.log(response))
-    .catch( error => {
-        console.error(error);
-    });
+        .then(response => response.json())
+        .then(response => selectBoxes(response))
+        .catch(error => {
+            alert("Wrong query!");
+            console.log(error);
+        });
 
+    // Close window
     queryModal.style.display = "none";
+}
 
-   //fetchArts(); 
-    }
-
-// change repository
-
+// Change repository button
 var repo = document.getElementById("set_repository");
 
-repo.onclick = function() {
-    
+// Change repository on click
+repo.onclick = function () {
     var repo_id = document.getElementById("repository");
-    new_id = repo_id.value;
-    if(new_id !== id){
-        artID = [];
-        document.getElementById("myUL").innerHTML = "";
-        id = new_id;
-        console.log("Changing repo id to: " + id);
-        create= "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/create";
-        base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
-        artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
-        query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
-        console.log(create);
-        fetchArts();
+    var newID = repo_id.value;
+    if (newID != id) {
+        removeSearch();
+        noArt();
+        lastID = id;
+        id = newID;
+        changeRepo(id);
+        disabler();
     }
-    
+
 }
 
-function main(){
-
+// Function to draw selected artifact on screen
+function drawArt() {
+    // Get position of each box
     position();
 
-    boxes.sort(function(a, b){
+    // Sort boxes by order
+    boxes.sort(function (a, b) {
         return a.documentOrder - b.documentOrder;
     });
-    
+
     const view = document.getElementById("view");
-    view.style.width = pageWidth + "px";
-    view.style.height = pageHeight + "px";
-     
-     //console.log(boxesId);
-     for(var i = 0; i<boxes.length;i++){
-            
-            const d = document.createElement('box-element');
-            
-            d.innerHTML = `
-            <box-element id="${boxes[i].id}" style="position: absolute; top: ${boxes[i].posY}px; left: ${ boxes[i].posX }px; width: ${boxes[i].widht}px;
-            height: ${ boxes[i].height }px; background-color:#${ boxes[i].backgroundColor }; color:#${boxes[i].color}; font-size:${
-            boxes[i].fontSize }px; font-weight: ${ boxes[i].fontWeight}; font-family:${ boxes[i].fontFamily}; font-style: ${boxes[i].fontStyle};
-             border-left:${ boxes[i].borderL.borderWidth}px ${ boxes[i].borderL.borderStyle } #${ boxes[i].borderL.borderColor };
-             border-right:${ boxes[i].borderR.borderWidth}px ${ boxes[i].borderR.borderStyle } #${ boxes[i].borderR.borderColor };
-             border-top:${ boxes[i].borderT.borderWidth}px ${ boxes[i].borderT.borderStyle } #${ boxes[i].borderT.borderColor };
-             border-bottom:${ boxes[i].borderB.borderWidth}px ${ boxes[i].borderB.borderStyle } #${ boxes[i].borderB.borderColor };
+
+    document.getElementById("loading").style.display = "none";
+
+    // Go trough all boxes to make custom element and draw them on screen
+    for (var i = 0; i < boxes.length; i++) {
+
+        const d = document.createElement('box-element');
+
+        d.innerHTML = `
+            <box-element id="${boxes[i].id}" style="position: absolute; top: ${boxes[i].posY}px; left: ${boxes[i].posX}px; width: ${boxes[i].widht}px;
+            height: ${boxes[i].height}px; background-color:#${boxes[i].backgroundColor}; color:#${boxes[i].color}; font-size:${boxes[i].fontSize}px; font-weight: ${boxes[i].fontWeight}; font-family:${boxes[i].fontFamily}; font-style: ${boxes[i].fontStyle};
+             border-left:${boxes[i].borderL.borderWidth}px ${boxes[i].borderL.borderStyle} #${boxes[i].borderL.borderColor};
+             border-right:${boxes[i].borderR.borderWidth}px ${boxes[i].borderR.borderStyle} #${boxes[i].borderR.borderColor};
+             border-top:${boxes[i].borderT.borderWidth}px ${boxes[i].borderT.borderStyle} #${boxes[i].borderT.borderColor};
+             border-bottom:${boxes[i].borderB.borderWidth}px ${boxes[i].borderB.borderStyle} #${boxes[i].borderB.borderColor};
              white-space: nowrap;">
-            ${ boxes[i].text }
+            ${boxes[i].text}
             </box-element>
              `;
-             view.appendChild(d);
+        view.appendChild(d);
 
-        
-     }
-     boxTreeMaker();
-     box_list(boxTree);
-     view.classList.toggle("visibility");
-     view.addEventListener("click", function(event){
-         console.log(event.target.id + "_node");
-         clickFunction(event.target.id + "_node", event.target.id,"box");
-     })
+
+    }
+    boxTreeMaker();
+    box_list(boxTree);
+
+    // onClick function to all boxes in order to interact with them
+    view.onclick = function (event) {
+        console.log(event.target.id + "_node");
+        clickFunction(event.target.id + "_node", event.target.id, "box");
+    };
+
+    highlightQuery()
 
 }
 
-function position(){
-    boxes.forEach(function(box){
-        if(result = boxes.find( ({ id }) => id === box.boundsid)){
+// Start of script
+fetchArts();
+
+// Function to fetch repository from REST API
+function fetchArts() {
+    console.log("Fetching arts!");
+
+    const myParser = new JsonLdParser();
+    myParser
+        .on('data', artifacts)
+        .on('error', () => {
+            console.error;
+            alert("Error while fetching repository!");
+        })
+        .on('end', list);
+
+    fetch(artifact)
+        .then(body => {
+            if (body.ok) {
+                return body.text();
+            }
+            else {
+                artifacts(null);
+            }
+        })
+        .then(data => {
+            myParser.write(data);
+            myParser.end();
+        })
+}
+
+// Change used repository
+function changeRepo(id) {
+
+    // Set all URLs to new repository id
+    console.log("Changing repo id to: " + id);
+    create = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/create";
+    base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
+    artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
+    query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
+
+    cleanRepo();
+    fetchArts();
+}
+
+// Remove search 
+function removeSearch() {
+    highlightArts();
+    highlightQuery();
+
+    document.getElementById("removeQuery").style.display = "none";
+    selectedBoxes = [];
+}
+
+// Extract artifact id from IRI
+function getArtfromIRI(iri) {
+    return iri.substring(iri.lastIndexOf('/') + 1, iri.lastIndexOf('#'));
+}
+
+// Extract box id from IRI
+function getIDfromIRI(iri) {
+    return iri.substring(iri.lastIndexOf('/') + 1, iri.lenght);
+}
+
+// Clean list of artifacts used when changing repository
+function cleanRepo() {
+    Arts = [];
+    document.getElementById("myUL").innerHTML = "";
+}
+
+// Find boxes and artifacts with selected boxes across whole repository
+function selectBoxes(result) {
+
+    highlightQuery();
+    highlightArts();
+    
+    const boxes = result.results.bindings;
+
+    selectedBoxes = [];
+
+    boxes.forEach(box => {
+        var art = getArtfromIRI(box.iri.value);
+        var ID = getIDfromIRI(box.iri.value);
+
+        var found = selectedBoxes.find(Element => Element.art === art);
+        if (found) {
+            found.boxes.push(ID);
+        }
+        else {
+            var selectedArt = {
+                art: art,
+                boxes: [ID]
+            }
+            selectedBoxes.push(selectedArt);
+        }
+    });
+
+    if (selectedBoxes.length == 0) {
+        alert("No boxes match this query!");
+        removeBtn.style.display = "none";
+    }
+    else (removeBtn.style.display = "block")
+
+    console.log(selectedBoxes);
+
+    highlightQuery();
+    highlightArts();
+
+}
+
+// Highlight found boxes 
+function highlightQuery() {
+
+    var found = selectedBoxes.find(Element => Element.art === activeArt);
+    if (found) {
+        found.boxes.forEach(box => {
+            document.getElementById(box).classList.toggle("selection");
+            document.getElementById(box + "_node").classList.toggle("selection");
+        });
+    }
+}
+
+// Highlight artifacts containing found boxes
+function highlightArts() {
+    selectedBoxes.forEach(element => {
+        document.getElementById(element.art).classList.toggle("selection");
+    })
+}
+
+// Set position to boxes 
+function position() {
+    boxes.forEach(function (box) {
+        if (result = boxes.find(({ id }) => id === box.boundsid)) {
             box.posX = result.posX;
             box.posY = result.posY;
             box.widht = result.widht;
             box.height = result.height;
-            
+
             const index = boxes.indexOf(result);
             if (index > -1) {
-              boxes.splice(index, 1);
+                boxes.splice(index, 1);
             }
         }
     })
 }
 
-function artifacts(data){
+// Save artifacts from parser to list  
+function artifacts(data) {
+    disabler();
+    document.getElementById("loading").style.display = "none";
 
-    if(data != null){
-    var predicate = data.predicate.value;
-    var subject = data.subject.value;
-    
-    var lastIndexS = subject.lastIndexOf('/')+1;
-    var id = subject.substr(lastIndexS,subject.lenght);
+    if (data != null) {
+        var predicate = data.predicate.value;
+        var subject = data.subject.value;
 
-    if(predicate.includes("hasParentArtifact")){
-        var object = data.object.value;
-        
-        var lastIndexO = object.lastIndexOf('/')+1;
-        var parentId = object.substr(lastIndexO,object.lenght);
+        var id = getIDfromIRI(subject);
+        // Check if artifact has parent
+        if (predicate.includes("hasParentArtifact")) {
+            var object = data.object.value;
 
-        var found = false;
-        artID.forEach(function(art){
-            if(art.id == id){
-                found = true;
-                art.parentID = parentId;
+            var parentId = getIDfromIRI(object);
+
+            var found = false;
+            Arts.forEach(function (art) {
+                if (art.id == id) {
+                    found = true;
+                    art.parentID = parentId;
+                }
+            })
+            // Artifact already exists in list
+            if (found == false) {
+                var art = {
+                    id: id,
+                    parentID: parentId
+                }
+                Arts.push(art);
             }
-        })
-        
-        
-    if(found == false){
-        var art={
-            id: id,
-            parentID: parentId
         }
-        artID.push(art);
-        }
-    }
-    else{
-        var found = false;
-        artID.forEach(function(art){
-            if(art.id == id){
-                found = true;
+        // Artifact without parent
+        else {
+            var found = false;
+            Arts.forEach(function (art) {
+                if (art.id == id) {
+                    found = true;
+                }
+            })
+            if (found == false) {
+                var art = {
+                    id: id,
+                    parentID: null
+                }
+
+                Arts.push(art);
             }
-        })
-        if(found == false){
-            var art={
-                id: id,
-                parentID: null
-            }
-            
-            artID.push(art);
-        }
         }
     }
     else {
-        var list = document.getElementById("list");
-
-        list.innerHTML = "Empty or wrong repository!"
+        alert("Empty or wrong repository!");
+        id = lastID;
+        changeRepo(id);
     }
 }
-function box_list(boxes_list){  
+
+// Make list out of tree of boxes
+function box_list(boxesTree) {
     const box_ul = document.getElementById("myUL2");
-    
-    main_recursion(boxes_list[0],box_ul.id,"box");
+
+    main_recursion(boxesTree[0], box_ul.id, "box");
 
     var toggler = document.getElementsByClassName("caret");
     var i;
 
-    box_ul.addEventListener("click", function(event) {    
-        clickFunction(event.target.id,event.target.innerHTML,"box");  
-    });
-   
+    // onClick on list of boxes in order to interact with boxes
+    box_ul.onclick = function (event) {
+        clickFunction(event.target.id, event.target.innerHTML, "box");
+    };
+
     for (i = 0; i < toggler.length; i++) {
-    toggler[i].addEventListener("click", function() {
-    this.parentElement.querySelector(".nested").classList.toggle("active");
-    this.classList.toggle("caret-down");
-        });
-    } 
-      
+        toggler[i].onclick = function () {
+            this.parentElement.querySelector(".nested").classList.toggle("active");
+            this.classList.toggle("caret-down");
+        };
+    }
+
 }
 
-function main_recursion(Element,box,list){
-    if(Element.kids){   
-        parent(Element,box,list);
+
+// Main recursion to make tree of boxes from array
+function main_recursion(Element, box, list) {
+    if (Element.kids) {
+        parent(Element, box, list);
     }
-    else{
-        child(Element,box,list);
-        
+    else {
+        child(Element, box, list);
+
     }
 }
 
-function parent(Element,box,list){
+// Helping function to make tree of boxes
+function parent(Element, box, list) {
     var li = document.createElement('li');
-    li.setAttribute("class","text-center");
-    li.setAttribute("id",Element.id);
+    li.setAttribute("id", Element.id);
     var span = document.createElement('span');
     span.setAttribute("class", "caret");
-    span.setAttribute("id",Element.id+"_node");
+    span.setAttribute("id", Element.id + "_node");
     span.textContent = Element.id;
     li.appendChild(span);
 
-    if(list == 'art'){
+    if (list == 'art') {
         var delete_btn = document.createElement('span');
-        delete_btn.setAttribute("id",Element.id+"_delete");
-        delete_btn.setAttribute("class","end-0 float-right");
+        delete_btn.setAttribute("id", Element.id + "_delete");
+        delete_btn.setAttribute("class", "end-0 float-right");
         delete_btn.innerHTML = "&#10060";
         var segment_btn = document.createElement('span');
-        segment_btn.setAttribute("id",Element.id+"_segment");
-        segment_btn.setAttribute("class","float-right mr-20");
+        segment_btn.setAttribute("id", Element.id + "_segment");
+        segment_btn.setAttribute("class", "float-right mr-20");
         segment_btn.innerHTML = "SEG";
         li.appendChild(delete_btn);
         li.appendChild(segment_btn);
-        
+
     }
-    
-    
-    
 
-    var ul=document.createElement('ul');
-            ul.setAttribute("class", "nested");
-            ul.setAttribute("id",Element.id+"_ul");
-            li.appendChild(ul);
-        document.getElementById(box).appendChild(li);        
+    var ul = document.createElement('ul');
+    ul.setAttribute("class", "nested");
+    ul.setAttribute("id", Element.id + "_ul");
+    li.appendChild(ul);
+    document.getElementById(box).appendChild(li);
 
-    Element.kids.forEach(function(kid){
-        if(result = boxTree.find( ({ id }) => id === kid)){
-           parent(result,ul.id,list); 
+    Element.kids.forEach(function (kid) {
+        if (result = boxTree.find(({ id }) => id === kid)) {
+            parent(result, ul.id, list);
         }
-        else{
-            child(kid,ul,list);
+        else {
+            child(kid, ul, list);
         }
-        
+
     });
-        
+
 }
 
-
-function child(Element,box,list){
+// Helping function to make tree of boxes
+function child(Element, box, list) {
     var kidLi = document.createElement('li');
-    kidLi.setAttribute("class","position-relative");
-    kidLi.setAttribute("id",Element+"_node");
+    kidLi.setAttribute("class", "position-relative");
+    kidLi.setAttribute("id", Element + "_node");
     kidLi.textContent = Element;
-    if(list == 'art'){
+    if (list == 'art') {
         var delete_btn = document.createElement('span');
-        delete_btn.setAttribute("id",Element+"_delete");
-        delete_btn.setAttribute("class","end-0");
-        delete_btn.setAttribute("class","position-absolute end-0");
+        delete_btn.setAttribute("id", Element + "_delete");
+        delete_btn.setAttribute("class", "end-0");
+        delete_btn.setAttribute("class", "position-absolute end-0");
         delete_btn.textContent = "&#10060";
         kidLi.appendChild(delete_btn);
     }
-    
+
     box.appendChild(kidLi);
 }
 
+// Interact with artifacts and boxes by clicking
+function clickFunction(listid, boxid, list) {
 
-function clickFunction(listid,boxid,list){      
-        if(list == "box"){ 
-            if(target_element){
-                target_element.classList.remove("highlight");
-            }
-            if(selected_box){
-                selected_box.classList.remove("selected");
-            }
-            selected_box = document.getElementById(boxid);
-            selected_box.classList.add("selected");
-            target_element = document.getElementById(listid);
-            target_element.classList.add("highlight");
-            var parent = target_element.parentElement;
-            while(parent != document.getElementById("myUL2")){
-                console.log(parent.id);
-                parent.classList.add("active");
-                parent = parent.parentElement;
-
-            }
-            target_element.scrollIntoView();
-            
-
-            showBoxInfo(boxid);
+    // Interact with boxes
+    if (list == "box") {
+        if (targetBox) {
+            targetBox.classList.remove("highlight");
         }
-        else{
-            target = event.target.innerHTML; 
-            if(listid.includes("_delete")){
-                const id = listid.replace("_delete","");
+        if (selected_box) {
+            selected_box.classList.remove("selected");
+        }
+        selected_box = document.getElementById(boxid);
+        selected_box.classList.add("selected");
+        targetBox = document.getElementById(listid);
+        targetBox.classList.add("highlight");
+        var parent = targetBox.parentElement;
+        while (parent != document.getElementById("myUL2")) {
+            //console.log(parent.id);
+            parent.classList.add("active");
+            parent = parent.parentElement;
 
-                const arturl = base + id;
-                console.log("Fetch DELETE to: " + arturl);
-                fetch(arturl, {
+        }
+
+        showBoxInfo(boxid);
+    }
+    // Interact with artifacts
+    else {
+        target = event.target.innerHTML;
+        // Delete artifact
+        if (listid.includes("_delete")) {
+            const id = listid.replace("_delete", "");
+
+            const arturl = base + id;
+            console.log("Fetch DELETE to: " + arturl);
+            fetch(arturl, {
                 method: 'DELETE',
             })
-            .then(res => res.text()) // or res.json()
-            .then(res => console.log(res));
-            
+                .then(res => res.text()) // or res.json()
+                .then(res => console.log(res));
+
             var deletedLi = document.getElementById(id);
             deletedLi.remove();
 
-            }
-            else if(listid.includes("_segment")){
-                const id = listid.replace("_segment","");            
-                const parentIri = "http://fitlayout.github.io/resource/" + id;
+        }
+        // Segment artifact
+        else if (listid.includes("_segment")) {
+            const id = listid.replace("_segment", "");
+            const parentIri = "http://fitlayout.github.io/resource/" + id;
 
-                const data = {
-                    "params": {
-                        "pDoC": 9
-                    },
-                        "serviceId": "FitLayout.VIPS",
-                        "parentIti": parentIri
-                    };
-                    
-                    fetch(create,{
-                        method: 'POST',
-                        body: JSON.stringify(data),
-                        headers: { 'Content-Type': 'application/json' }
-                    })
-                    .then(response => response.json())
-                    .catch((error) => {
-                         console.error('Error:', error);
-                    });
-                    //location.reload()
-            }
-            else{
-            
-            if(last_active != document.getElementById(listid)){
-                if(last_active){
+            const data = {
+                "params": {
+                    "pDoC": 9
+                },
+                "serviceId": "FitLayout.VIPS",
+                "parentIti": parentIri
+            };
+
+            fetch(create, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+
+        }
+        // Choose artifact
+        else {
+
+            if (last_active != document.getElementById(listid)) {
+                if (last_active) {
                     last_active.classList.remove("highlight");
                 }
                 console.log(last_active)
-            last_active = document.getElementById(listid);
+                last_active = document.getElementById(listid);
 
-            last_active.classList.add("highlight");  
+                last_active.classList.add("highlight");
 
-            
-            boxes = [];
-            boxTree = [];
-            //console.log(boxes);
-            document.getElementById("bottom").innerHTML = "";
-            document.getElementById("myUL2").innerHTML = "";
-            document.getElementById("view").innerHTML = "";
-            document.getElementById("view").classList.toggle("visibility");
-            
-            document.getElementById("loading").style.visibility = "visible";
-            getArt(target);
+                noArt();
+
+                getArt(target);
             }
         }
     }
 }
 
+// Helping function to remove selection of artifact
+function noArt() {
+    console.log("no art");
+    boxes = [];
+    boxTree = [];
 
-function list(){
+    document.getElementById("bottom").innerHTML = "";
+    document.getElementById("myUL2").innerHTML = "";
+    document.getElementById("view").innerHTML = "";
+
+    document.getElementById("loading").style.display = "block";
+}
+
+// Make list of artifact out of tree of artifacts
+function list() {
+    
+    disabler();
     treeMaker();
-        
-    const art_ul = document.getElementById("myUL");
+
+    var art_ul = document.getElementById("myUL");
+    art_ul.innerHTML = "";
+
     tree.forEach(node => main_recursion(node, art_ul.id, "art"));
 
-    art_ul.addEventListener("click", function(event) {
-    clickFunction(event.target.id,0,"art");
-    });
+    art_ul.onclick = function (event) {
+        clickFunction(event.target.id, 0, "art");
+    };
     var toggler = document.getElementsByClassName("caret");
-  
+
     for (var i = 0; i < toggler.length; i++) {
-    toggler[i].addEventListener("click", function() {
-    this.parentElement.querySelector(".nested").classList.toggle("active");
-    this.classList.toggle("caret-down");
-  });
-}
-    if (art_ul.innerHTML.trim == ""){
+        toggler[i].onclick = function () {
+            this.parentElement.querySelector(".nested").classList.toggle("active");
+            this.classList.toggle("caret-down");
+        };
+    }
+    if (art_ul.innerHTML.trim == "") {
         art_ul.innerHTML = "Empty or wrong repository"
     }
-    
+
 }
 
-function getArt(target){
+// Fetch selected artifact from REST API
+function getArt(target) {
+    disabler();
+
     const artParser = new JsonLdParser();
     artParser
-    .on('data', saveObject)
-    .on('error', console.error)
-    .on('end', main);
+        .on('data', saveArt)
+        .on('error', console.error)
+        .on('end', drawArt);
 
     url = base + target;
+    activeArt = target;
+    console.log(activeArt);
 
-    artID.forEach(function(art){
-        
-        if(art.id == target && art.parentID != null){
+    Arts.forEach(function (art) {
+
+        if (art.id == target && art.parentID != null) {
             url = base + art.parentID
         }
     })
     console.log("GET: " + url);
 
-    fetch(url,{
+    fetch(url, {
         method: 'GET',
         headers: { 'Accept': 'application/ld+json' }
     })
-    .then(function(body){
-        return body.text();
-    }).then(function(data) {
-        console.log(data);
-        artParser.write(data);
-        artParser.end();
-    });
-    
+        .then(function (body) {
+            return body.text();
+        }).then(function (data) {
+            artParser.write(data);
+            disabler();
+            artParser.end();
+        });
+
 }
 
-function showBoxInfo(id){
+// Helping function to enable/disable buttons
+function disabler() {
+    queryBtn.disabled = !queryBtn.disabled;
+    artBtn.disabled = !artBtn.disabled;
+    repo.disabled = !repo.disabled;
+    removeBtn.disabled = !removeBtn.disabled;
+}
 
-    //console.log(id);
+// Write info about selected box to table
+function showBoxInfo(id) {
+
     var foundBox;
-    boxes.forEach(function(box){
-        if(box.id == id){
+    boxes.forEach(function (box) {
+        if (box.id == id) {
             foundBox = box;
         }
     })
-        //console.log(foundBox);
-        var window = document.getElementById("bottom");
-        window.innerHTML = `
+    // Create table with info
+    var window = document.getElementById("bottom");
+    window.innerHTML = `
         <table>
         <tr>
           <th>Attribute</th>
@@ -687,129 +809,119 @@ function showBoxInfo(id){
       </table>`
 }
 
-function boxTreeMaker(){
-    
+// Helping function to make tree out of array of boxes
+function boxTreeMaker() {
+
     var result;
-    boxes.forEach(function(box){
-    if(box.type == "Box" || box.type == "Border"){
-        
-        if(box.isChildOf){
-            
-          if(result = boxTree.find( ({ id }) => id === box.isChildOf)){
-                result.kids.push(box.id);
+    boxes.forEach(function (box) {
+        if (box.type == "Box" || box.type == "Border") {
 
-              var node = {
-              id: box.id,
-              kids:[],
+            if (box.isChildOf) {
+
+                if (result = boxTree.find(({ id }) => id === box.isChildOf)) {
+                    result.kids.push(box.id);
+
+                    var node = {
+                        id: box.id,
+                        kids: [],
+                    }
+                    boxTree.push(node);
+                }
             }
-            boxTree.push(node);
-          }
-        }
-        else if(box.isChildOf == null){
-            if(result = boxTree.find( ({ id }) => id === box.id)){
-                console.log(box.id);
-                return;
-          }
-          else{
-              var node = {
-              id: box.id,
-              kids:[],
+            else if (box.isChildOf == null) {
+                if (result = boxTree.find(({ id }) => id === box.id)) {
+                    return;
+                }
+                else {
+                    var node = {
+                        id: box.id,
+                        kids: [],
+                    }
+                    boxTree.push(node);
+                }
             }
-            boxTree.push(node);
-          }
         }
-        }
-     }) 
-     //console.log(boxTree);
-     //console.log(boxes);
-    }
-      
+    })
 
+}
 
-function treeMaker(){
-    
-    for(var i=0; i<artID.length; i++){
-        
-        if(!artID[i].parentID){
-            //console.log(artID[i]);
-            var parent={
-                id: artID[i].id,
+// Helping function to make tree out of array of artifacts
+function treeMaker() {
+    tree = [];
+    for (var i = 0; i < Arts.length; i++) {
+
+        if (!Arts[i].parentID) {
+
+            var parent = {
+                id: Arts[i].id,
                 kids: []
             }
-            for (var j=0; j<artID.length; j++){
-                if(artID[j].parentID){
-                    if(artID[j].parentID == artID[i].id){
-                        parent.kids.push(artID[j].id);
+            for (var j = 0; j < Arts.length; j++) {
+                if (Arts[j].parentID) {
+                    if (Arts[j].parentID == Arts[i].id) {
+                        parent.kids.push(Arts[j].id);
                     }
                 }
             }
             tree.push(parent);
+        }
     }
-    
-}
-//console.log(tree);
 }
 
-function saveObject(data){
+// Main function to save all info about selected artifact into object
+function saveArt(data) {
 
     var object = data.object.value;
 
-    if(object.includes('width=')){
-  
-    pageWidth = object.substr(object.indexOf('width=')+6, object.lenght);
-    pageWidth = pageWidth.substr(0,pageWidth.indexOf(' '));
-    
-    
-    pageHeight = object.substr(object.indexOf('height=')+7, object.lenght);
-    pageHeight = pageHeight.substr(0,pageHeight.indexOf(' '));
-    
-    }
-    var lastIndexO = object.lastIndexOf('#')+1;
-    var value = object.substr(lastIndexO,object.lenght);
-   
+    var lastIndexO = object.lastIndexOf('#') + 1;
+    var value = object.substr(lastIndexO, object.lenght);
+
 
     var subject = data.subject.value;
-    var lastIndexS = subject.lastIndexOf('/')+1;
-    var id = subject.substr(lastIndexS,subject.lenght);
+    var id = subject.substr(subject.lastIndexOf('/') + 1, subject.lenght);
+
 
     var borderS = "";
-    
-    if(id.includes("Btop")){
-        id = id.replace('Btop','');
+
+    if (id.includes("Btop")) {
+        id = id.replace('Btop', '');
         borderS = "top";
     }
-    if(id.includes("Bbottom")){
-        id = id.replace('Bbottom','');
+    if (id.includes("Bbottom")) {
+        id = id.replace('Bbottom', '');
         borderS = "bottom";
     }
-    if(id.includes("Bleft")){
-        id = id.replace('Bleft','');
+    if (id.includes("Bleft")) {
+        id = id.replace('Bleft', '');
         borderS = "left";
     }
-    if(id.includes("Bright")){
-        id = id.replace('Bright','');
+    if (id.includes("Bright")) {
+        id = id.replace('Bright', '');
         borderS = "right";
     }
 
-    if(value == "Box"){
+    if (value == "Box") {
         boxesId.push(id);
     }
 
     var predicate = data.predicate.value;
-    var lastIndexP = predicate.lastIndexOf('#')+1;
-    var type = predicate.substr(lastIndexP,predicate.lenght);
+    var type = predicate.substr(predicate.lastIndexOf('#') + 1, predicate.lenght);
 
-        for(var i = 0; i<boxes.length;i++){
-            
-            if(id==boxes[i].id){
-                foundID = true;
-                
-                    if(borderS=="top"){
-                    switch (type) {
-                    case "borderColor": 
+    var foundID = false;
+
+    if (type == "pngImage") pageImg = object.value;
+
+    for (var i = 0; i < boxes.length; i++) {
+        // Box already exists in array
+        if (id == boxes[i].id) {
+            foundID = true;
+
+            if (borderS == "top") {
+                switch (type) {
+                    case "borderColor":
                         boxes[i].borderT.borderColor = value;
                         break;
-                    case "borderStyle": 
+                    case "borderStyle":
                         boxes[i].borderT.borderStyle = value;
                         break;
                     case "borderWidth":
@@ -817,14 +929,14 @@ function saveObject(data){
                         break;
                     default:
                         break;
-                        }
-                    }
-                    else if(borderS=="left"){
-                    switch (type) {
-                        case "borderColor": 
+                }
+            }
+            else if (borderS == "left") {
+                switch (type) {
+                    case "borderColor":
                         boxes[i].borderL.borderColor = value;
                         break;
-                    case "borderStyle": 
+                    case "borderStyle":
                         boxes[i].borderL.borderStyle = value;
                         break;
                     case "borderWidth":
@@ -832,14 +944,14 @@ function saveObject(data){
                         break;
                     default:
                         break;
-                        }
-                    }
-                    else if(borderS=="bottom"){
-                    switch (type) {
-                        case "borderColor": 
+                }
+            }
+            else if (borderS == "bottom") {
+                switch (type) {
+                    case "borderColor":
                         boxes[i].borderB.borderColor = value;
                         break;
-                    case "borderStyle": 
+                    case "borderStyle":
                         boxes[i].borderB.borderStyle = value;
                         break;
                     case "borderWidth":
@@ -847,14 +959,14 @@ function saveObject(data){
                         break;
                     default:
                         break;
-                        }
-                    }
-                    else if(borderS=="right"){
-                    switch (type) {
-                        case "borderColor": 
+                }
+            }
+            else if (borderS == "right") {
+                switch (type) {
+                    case "borderColor":
                         boxes[i].borderR.borderColor = value;
                         break;
-                    case "borderStyle": 
+                    case "borderStyle":
                         boxes[i].borderR.borderStyle = value;
                         break;
                     case "borderWidth":
@@ -862,289 +974,294 @@ function saveObject(data){
                         break;
                     default:
                         break;
-                        }
-                    }
-               
-                
-                switch (type) {
-                    case "bounds":
-                        boxes[i].boundsid = target + "#" + value;
-                        break;
-                    case "backgroundColor":
-                        boxes[i].backgroundColor = value;                  
-                        break;
-                    case "positionX":
-                        boxes[i].posX = value;                      
-                        break;
-
-                    case "positionY":
-                        boxes[i].posY = value;
-                        break;
-
-                    case "width":
-                        boxes[i].widht = value; 
-                        break;
-
-                    case "height":
-                        boxes[i].height = value;
-                        break;
-
-                    case "belongsTo":
-                        boxes[i].belongsTo = value;
-                        break;
-                    
-                    case "color":
-                        boxes[i].color = value;
-                        break;
-                    
-                    case "documentOrder":
-                        boxes[i].documentOrder = value;
-                        break;    
-                    
-                    case "fontFamily":
-                        boxes[i].fontFamily = value;
-                        break;
-
-                    case "fontSize":
-                        boxes[i].fontSize = value;
-                        break;
-
-                    case "fontStyle":
-                        boxes[i].fontStyle = value;
-                        break;
-
-                    case "fontWeight":
-                        if(value > 0,5){
-                            boxes[i].fontWeight = "bold";
-                        }
-                        else{
-                            boxes[i].fontWeight = "normal";
-                        }
-                        
-                        break;
-
-                    case "hasAttribute":
-                        boxes[i].hasAttribute = value;
-                        break;
-
-                    case "htmlTagName":
-                        boxes[i].htmlTagName = value;
-                        break;
-                    
-                    case "lineTrough":
-                        boxes[i].lineTrough = value;
-                        break;
-
-                    case "underLine":
-                        boxes[i].underLine = value;
-                        break;
-
-                    case "visualHeight":
-                        boxes[i].visualHeight = value;
-                        break;
-
-                    case "visualWidth":
-                        boxes[i].visualWidth = value;
-                        break;
-
-                    case "visualX":
-                        boxes[i].visualX = value;
-                        break;
-
-                    case "visualY":
-                        boxes[i].visualY = value;
-                        break;
-
-                    case "type":
-                        boxes[i].type = value;
-                        break;
-
-                    case "isChildOf":
-                        boxes[i].isChildOf = target + "#" + value;
-                        break;
-                    
-                    case "text":
-                        boxes[i].text = value;
-                        break;
-
-                    default:
-                        break;
                 }
             }
-        }
 
-        if(foundID == false){
-            var O ={id: id,
-                    boundsid: "",
-                    backgroundColor: "none",
-                    posX: "0",
-                    posY: "0",
-                    widht: "0",
-                    height: "0",
-                    belongsTo:"",
-                    color:"",
-                    documentOrder:"",
-                    fontFamily:"",
-                    fontSize:"",
-                    fontStyle:"",
-                    fontWeight:"",
-                    hasAttribute:"",
-                    htmlTagName:"",
-                    lineThrough:"none",
-                    underLine:"none",
-                    visualHeight:"",
-                    visualWidth:"",
-                    visualX:"",
-                    visualY:"",
-                    type:"",
-                    isChildOf: null,
-                    text:"",
-                    borderL : 
-                    {
-                    borderColor:"",
-                    borderWidth:"0",
-                    borderStyle:""},
-                    borderR : 
-                    {
-                    borderColor:"",
-                    borderWidth:"0",
-                    borderStyle:""},
-                    borderT : 
-                    {
-                    borderColor:"",
-                    borderWidth:"0",
-                    borderStyle:""},
-                    borderB : 
-                    {
-                    borderColor:"",
-                    borderWidth:"0",
-                    borderStyle:""}
-                    }
-
-                    if(borderS){
-                        O.border.side=borderS;
-                        switch (type) {
-                            case "borderColor": 
-                            O.border.borderColor = value;
-                            break;
-                        case "borderStyle": 
-                            O.border.borderStyle = value;
-                            break;
-                        case "borderWidth":
-                            O.border.borderWidth = value;
-                            break;
-                        default:
-                            break;
-                        }
-                    }
 
             switch (type) {
-                case "label":
-                    O.label = value;
+                case "bounds":
+                    boxes[i].boundsid = target + "#" + value;
                     break;
-
                 case "backgroundColor":
-                    O.backgroundColor = value;                  
+                    boxes[i].backgroundColor = value;
                     break;
-
                 case "positionX":
-                    O.posX = value;                      
+                    boxes[i].posX = value;
                     break;
 
                 case "positionY":
-                    O.posY = value;
+                    boxes[i].posY = value;
                     break;
 
                 case "width":
-                    O.widht = value; 
+                    boxes[i].widht = value;
                     break;
 
                 case "height":
-                    O.height = value;
+                    boxes[i].height = value;
                     break;
 
                 case "belongsTo":
-                    O.belongsTo = value;
+                    boxes[i].belongsTo = value;
                     break;
-                
+
                 case "color":
-                    O.color = value;
+                    boxes[i].color = value;
                     break;
-                
+
                 case "documentOrder":
-                    O.documentOrder = value;
-                    break;    
-                
+                    boxes[i].documentOrder = value;
+                    break;
+
                 case "fontFamily":
-                    O.fontFamily = value;
+                    boxes[i].fontFamily = value;
                     break;
 
                 case "fontSize":
-                    O.fontSize = value;
+                    boxes[i].fontSize = value;
                     break;
 
                 case "fontStyle":
-                    O.fontStyle = value;
+                    boxes[i].fontStyle = value;
                     break;
 
                 case "fontWeight":
-                    O.fontWeight = value;
+                    if (value > 0, 5) {
+                        boxes[i].fontWeight = "bold";
+                    }
+                    else {
+                        boxes[i].fontWeight = "normal";
+                    }
+
                     break;
 
                 case "hasAttribute":
-                    O.hasAttribute = value;
+                    boxes[i].hasAttribute = value;
                     break;
 
                 case "htmlTagName":
-                    O.htmlTagName = value;
+                    boxes[i].htmlTagName = value;
                     break;
-                
+
                 case "lineTrough":
-                    O.lineTrough = value;
+                    boxes[i].lineTrough = value;
                     break;
 
                 case "underLine":
-                    O.underLine = value;
+                    boxes[i].underLine = value;
                     break;
 
                 case "visualHeight":
-                    O.visualHeight = value;
+                    boxes[i].visualHeight = value;
                     break;
 
                 case "visualWidth":
-                    O.visualWidth = value;
+                    boxes[i].visualWidth = value;
                     break;
 
                 case "visualX":
-                    O.visualX = value;
+                    boxes[i].visualX = value;
                     break;
 
                 case "visualY":
-                    O.visualY = value;
+                    boxes[i].visualY = value;
                     break;
 
                 case "type":
-                    O.type = value;
+                    boxes[i].type = value;
                     break;
 
                 case "isChildOf":
-                    O.type = value;
+                    boxes[i].isChildOf = target + "#" + value;
                     break;
-                case "hasText":
-                    O.text = value;
+
+                case "text":
+                    boxes[i].text = value;
                     break;
-                
 
                 default:
                     break;
             }
-                boxes.push(O);
+        }
+    }
+    // New box 
+    if (foundID == false) {
+        var O = {
+            id: id,
+            boundsid: "",
+            backgroundColor: "none",
+            posX: "0",
+            posY: "0",
+            widht: "0",
+            height: "0",
+            belongsTo: "",
+            color: "",
+            documentOrder: "",
+            fontFamily: "",
+            fontSize: "",
+            fontStyle: "",
+            fontWeight: "",
+            hasAttribute: "",
+            htmlTagName: "",
+            lineThrough: "none",
+            underLine: "none",
+            visualHeight: "",
+            visualWidth: "",
+            visualX: "",
+            visualY: "",
+            type: "",
+            isChildOf: null,
+            text: "",
+            borderL:
+            {
+                borderColor: "",
+                borderWidth: "0",
+                borderStyle: ""
+            },
+            borderR:
+            {
+                borderColor: "",
+                borderWidth: "0",
+                borderStyle: ""
+            },
+            borderT:
+            {
+                borderColor: "",
+                borderWidth: "0",
+                borderStyle: ""
+            },
+            borderB:
+            {
+                borderColor: "",
+                borderWidth: "0",
+                borderStyle: ""
+            }
         }
 
-        foundID = false;
+        if (borderS) {
+            O.border.side = borderS;
+            switch (type) {
+                case "borderColor":
+                    O.border.borderColor = value;
+                    break;
+                case "borderStyle":
+                    O.border.borderStyle = value;
+                    break;
+                case "borderWidth":
+                    O.border.borderWidth = value;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        switch (type) {
+            case "label":
+                O.label = value;
+                break;
+
+            case "backgroundColor":
+                O.backgroundColor = value;
+                break;
+
+            case "positionX":
+                O.posX = value;
+                break;
+
+            case "positionY":
+                O.posY = value;
+                break;
+
+            case "width":
+                O.widht = value;
+                break;
+
+            case "height":
+                O.height = value;
+                break;
+
+            case "belongsTo":
+                O.belongsTo = value;
+                break;
+
+            case "color":
+                O.color = value;
+                break;
+
+            case "documentOrder":
+                O.documentOrder = value;
+                break;
+
+            case "fontFamily":
+                O.fontFamily = value;
+                break;
+
+            case "fontSize":
+                O.fontSize = value;
+                break;
+
+            case "fontStyle":
+                O.fontStyle = value;
+                break;
+
+            case "fontWeight":
+                O.fontWeight = value;
+                break;
+
+            case "hasAttribute":
+                O.hasAttribute = value;
+                break;
+
+            case "htmlTagName":
+                O.htmlTagName = value;
+                break;
+
+            case "lineTrough":
+                O.lineTrough = value;
+                break;
+
+            case "underLine":
+                O.underLine = value;
+                break;
+
+            case "visualHeight":
+                O.visualHeight = value;
+                break;
+
+            case "visualWidth":
+                O.visualWidth = value;
+                break;
+
+            case "visualX":
+                O.visualX = value;
+                break;
+
+            case "visualY":
+                O.visualY = value;
+                break;
+
+            case "type":
+                O.type = value;
+                break;
+
+            case "isChildOf":
+                O.type = value;
+                break;
+            case "hasText":
+                O.text = value;
+                break;
+
+
+            default:
+                break;
+        }
+        boxes.push(O);
+    }
+
+    foundID = false;
 }
 
-},{"jsonld-streaming-parser":20}],2:[function(require,module,exports){
+},{"./config.js":1,"jsonld-streaming-parser":21}],3:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -1296,9 +1413,9 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],3:[function(require,module,exports){
-
 },{}],4:[function(require,module,exports){
+
+},{}],5:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3079,7 +3196,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":2,"buffer":4,"ieee754":9}],5:[function(require,module,exports){
+},{"base64-js":3,"buffer":5,"ieee754":10}],6:[function(require,module,exports){
 /* jshint esversion: 6 */
 /* jslint node: true */
 'use strict';
@@ -3107,7 +3224,7 @@ module.exports = function serialize (object) {
   }, '') + '}';
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function(self) {
 
 var irrelevant = (function (exports) {
@@ -3641,7 +3758,7 @@ var irrelevant = (function (exports) {
 })({});
 })(typeof self !== 'undefined' ? self : this);
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4140,7 +4257,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   }
 }
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict'
 
@@ -4522,7 +4639,7 @@ Link.formatAttribute = function( attr, value ) {
 module.exports = Link
 
 }).call(this)}).call(this,{"isBuffer":require("../../is-buffer/index.js")})
-},{"../../is-buffer/index.js":11}],9:[function(require,module,exports){
+},{"../../is-buffer/index.js":12}],10:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -4609,7 +4726,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -4638,7 +4755,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -4661,7 +4778,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4682,7 +4799,7 @@ __exportStar(require("./lib/JsonLdContext"), exports);
 __exportStar(require("./lib/JsonLdContextNormalized"), exports);
 __exportStar(require("./lib/Util"), exports);
 
-},{"./lib/ContextParser":13,"./lib/ErrorCoded":14,"./lib/FetchDocumentLoader":15,"./lib/IDocumentLoader":16,"./lib/JsonLdContext":17,"./lib/JsonLdContextNormalized":18,"./lib/Util":19}],13:[function(require,module,exports){
+},{"./lib/ContextParser":14,"./lib/ErrorCoded":15,"./lib/FetchDocumentLoader":16,"./lib/IDocumentLoader":17,"./lib/JsonLdContext":18,"./lib/JsonLdContextNormalized":19,"./lib/Util":20}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultExpandOptions = exports.ContextParser = void 0;
@@ -5444,7 +5561,7 @@ exports.defaultExpandOptions = {
     allowVocabRelativeToBase: true,
 };
 
-},{"./ErrorCoded":14,"./FetchDocumentLoader":15,"./JsonLdContextNormalized":18,"./Util":19,"canonicalize":5,"cross-fetch/polyfill":6,"relative-to-absolute-iri":52}],14:[function(require,module,exports){
+},{"./ErrorCoded":15,"./FetchDocumentLoader":16,"./JsonLdContextNormalized":19,"./Util":20,"canonicalize":6,"cross-fetch/polyfill":7,"relative-to-absolute-iri":53}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ERROR_CODES = exports.ErrorCoded = void 0;
@@ -5521,7 +5638,7 @@ var ERROR_CODES;
     ERROR_CODES["INVALID_STREAMING_KEY_ORDER"] = "invalid streaming key order";
 })(ERROR_CODES = exports.ERROR_CODES || (exports.ERROR_CODES = {}));
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FetchDocumentLoader = void 0;
@@ -5581,16 +5698,16 @@ class FetchDocumentLoader {
 }
 exports.FetchDocumentLoader = FetchDocumentLoader;
 
-},{"./ErrorCoded":14,"cross-fetch/polyfill":6,"http-link-header":8,"relative-to-absolute-iri":52}],16:[function(require,module,exports){
+},{"./ErrorCoded":15,"cross-fetch/polyfill":7,"http-link-header":9,"relative-to-absolute-iri":53}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 // tslint:disable:max-line-length
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonLdContextNormalized = void 0;
@@ -5760,7 +5877,7 @@ class JsonLdContextNormalized {
 }
 exports.JsonLdContextNormalized = JsonLdContextNormalized;
 
-},{"./ContextParser":13,"./ErrorCoded":14,"./Util":19,"relative-to-absolute-iri":52}],19:[function(require,module,exports){
+},{"./ContextParser":14,"./ErrorCoded":15,"./Util":20,"relative-to-absolute-iri":53}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Util = void 0;
@@ -5993,7 +6110,7 @@ Util.CONTAINERS_1_0 = [
     '@index',
 ];
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6008,7 +6125,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./lib/JsonLdParser"), exports);
 
-},{"./lib/JsonLdParser":22}],21:[function(require,module,exports){
+},{"./lib/JsonLdParser":23}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContextTree = void 0;
@@ -6054,7 +6171,7 @@ class ContextTree {
 }
 exports.ContextTree = ContextTree;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonLdParser = void 0;
@@ -6504,7 +6621,7 @@ JsonLdParser.ENTRY_HANDLERS = [
     new EntryHandlerInvalidFallback_1.EntryHandlerInvalidFallback(),
 ];
 
-},{"./ParsingContext":23,"./Util":24,"./entryhandler/EntryHandlerArrayValue":29,"./entryhandler/EntryHandlerContainer":30,"./entryhandler/EntryHandlerInvalidFallback":31,"./entryhandler/EntryHandlerPredicate":32,"./entryhandler/keyword/EntryHandlerKeywordContext":34,"./entryhandler/keyword/EntryHandlerKeywordGraph":35,"./entryhandler/keyword/EntryHandlerKeywordId":36,"./entryhandler/keyword/EntryHandlerKeywordIncluded":37,"./entryhandler/keyword/EntryHandlerKeywordNest":38,"./entryhandler/keyword/EntryHandlerKeywordType":39,"./entryhandler/keyword/EntryHandlerKeywordUnknownFallback":40,"./entryhandler/keyword/EntryHandlerKeywordValue":41,"http-link-header":8,"jsonld-context-parser":12,"jsonparse":42,"stream":55}],23:[function(require,module,exports){
+},{"./ParsingContext":24,"./Util":25,"./entryhandler/EntryHandlerArrayValue":30,"./entryhandler/EntryHandlerContainer":31,"./entryhandler/EntryHandlerInvalidFallback":32,"./entryhandler/EntryHandlerPredicate":33,"./entryhandler/keyword/EntryHandlerKeywordContext":35,"./entryhandler/keyword/EntryHandlerKeywordGraph":36,"./entryhandler/keyword/EntryHandlerKeywordId":37,"./entryhandler/keyword/EntryHandlerKeywordIncluded":38,"./entryhandler/keyword/EntryHandlerKeywordNest":39,"./entryhandler/keyword/EntryHandlerKeywordType":40,"./entryhandler/keyword/EntryHandlerKeywordUnknownFallback":41,"./entryhandler/keyword/EntryHandlerKeywordValue":42,"http-link-header":9,"jsonld-context-parser":13,"jsonparse":43,"stream":56}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ParsingContext = void 0;
@@ -6827,7 +6944,7 @@ ParsingContext.EXPAND_OPTIONS = {
     },
 };
 
-},{"./ContextTree":21,"./JsonLdParser":22,"jsonld-context-parser":12,"jsonld-context-parser/lib/ErrorCoded":14}],24:[function(require,module,exports){
+},{"./ContextTree":22,"./JsonLdParser":23,"jsonld-context-parser":13,"jsonld-context-parser/lib/ErrorCoded":15}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Util = void 0;
@@ -7627,7 +7744,7 @@ Util.XSD_INTEGER = Util.XSD + 'integer';
 Util.XSD_DOUBLE = Util.XSD + 'double';
 Util.RDF = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 
-},{"./entryhandler/EntryHandlerContainer":30,"canonicalize":5,"jsonld-context-parser":12,"rdf-data-factory":44}],25:[function(require,module,exports){
+},{"./entryhandler/EntryHandlerContainer":31,"canonicalize":6,"jsonld-context-parser":13,"rdf-data-factory":45}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContainerHandlerIdentifier = void 0;
@@ -7681,7 +7798,7 @@ class ContainerHandlerIdentifier {
 }
 exports.ContainerHandlerIdentifier = ContainerHandlerIdentifier;
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContainerHandlerIndex = void 0;
@@ -7753,7 +7870,7 @@ class ContainerHandlerIndex {
 }
 exports.ContainerHandlerIndex = ContainerHandlerIndex;
 
-},{"../Util":24,"../entryhandler/EntryHandlerPredicate":32,"jsonld-context-parser":12}],27:[function(require,module,exports){
+},{"../Util":25,"../entryhandler/EntryHandlerPredicate":33,"jsonld-context-parser":13}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContainerHandlerLanguage = void 0;
@@ -7786,7 +7903,7 @@ class ContainerHandlerLanguage {
 }
 exports.ContainerHandlerLanguage = ContainerHandlerLanguage;
 
-},{"jsonld-context-parser":12}],28:[function(require,module,exports){
+},{"jsonld-context-parser":13}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContainerHandlerType = void 0;
@@ -7849,7 +7966,7 @@ class ContainerHandlerType {
 }
 exports.ContainerHandlerType = ContainerHandlerType;
 
-},{"../Util":24,"../entryhandler/EntryHandlerPredicate":32}],29:[function(require,module,exports){
+},{"../Util":25,"../entryhandler/EntryHandlerPredicate":33}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerArrayValue = void 0;
@@ -7973,7 +8090,7 @@ class EntryHandlerArrayValue {
 }
 exports.EntryHandlerArrayValue = EntryHandlerArrayValue;
 
-},{"../Util":24}],30:[function(require,module,exports){
+},{"../Util":25}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerContainer = void 0;
@@ -8163,7 +8280,7 @@ EntryHandlerContainer.CONTAINER_HANDLERS = {
     '@type': new ContainerHandlerType_1.ContainerHandlerType(),
 };
 
-},{"../Util":24,"../containerhandler/ContainerHandlerIdentifier":25,"../containerhandler/ContainerHandlerIndex":26,"../containerhandler/ContainerHandlerLanguage":27,"../containerhandler/ContainerHandlerType":28}],31:[function(require,module,exports){
+},{"../Util":25,"../containerhandler/ContainerHandlerIdentifier":26,"../containerhandler/ContainerHandlerIndex":27,"../containerhandler/ContainerHandlerLanguage":28,"../containerhandler/ContainerHandlerType":29}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerInvalidFallback = void 0;
@@ -8190,7 +8307,7 @@ class EntryHandlerInvalidFallback {
 }
 exports.EntryHandlerInvalidFallback = EntryHandlerInvalidFallback;
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerPredicate = void 0;
@@ -8329,7 +8446,7 @@ class EntryHandlerPredicate {
 }
 exports.EntryHandlerPredicate = EntryHandlerPredicate;
 
-},{"../Util":24,"jsonld-context-parser":12}],33:[function(require,module,exports){
+},{"../Util":25,"jsonld-context-parser":13}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeyword = void 0;
@@ -8355,7 +8472,7 @@ class EntryHandlerKeyword {
 }
 exports.EntryHandlerKeyword = EntryHandlerKeyword;
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordContext = void 0;
@@ -8393,7 +8510,7 @@ class EntryHandlerKeywordContext extends EntryHandlerKeyword_1.EntryHandlerKeywo
 }
 exports.EntryHandlerKeywordContext = EntryHandlerKeywordContext;
 
-},{"./EntryHandlerKeyword":33,"jsonld-context-parser":12}],35:[function(require,module,exports){
+},{"./EntryHandlerKeyword":34,"jsonld-context-parser":13}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordGraph = void 0;
@@ -8412,7 +8529,7 @@ class EntryHandlerKeywordGraph extends EntryHandlerKeyword_1.EntryHandlerKeyword
 }
 exports.EntryHandlerKeywordGraph = EntryHandlerKeywordGraph;
 
-},{"./EntryHandlerKeyword":33}],36:[function(require,module,exports){
+},{"./EntryHandlerKeyword":34}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordId = void 0;
@@ -8453,7 +8570,7 @@ class EntryHandlerKeywordId extends EntryHandlerKeyword_1.EntryHandlerKeyword {
 }
 exports.EntryHandlerKeywordId = EntryHandlerKeywordId;
 
-},{"./EntryHandlerKeyword":33,"jsonld-context-parser":12}],37:[function(require,module,exports){
+},{"./EntryHandlerKeyword":34,"jsonld-context-parser":13}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordIncluded = void 0;
@@ -8482,7 +8599,7 @@ class EntryHandlerKeywordIncluded extends EntryHandlerKeyword_1.EntryHandlerKeyw
 }
 exports.EntryHandlerKeywordIncluded = EntryHandlerKeywordIncluded;
 
-},{"./EntryHandlerKeyword":33,"jsonld-context-parser":12}],38:[function(require,module,exports){
+},{"./EntryHandlerKeyword":34,"jsonld-context-parser":13}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordNest = void 0;
@@ -8507,7 +8624,7 @@ class EntryHandlerKeywordNest extends EntryHandlerKeyword_1.EntryHandlerKeyword 
 }
 exports.EntryHandlerKeywordNest = EntryHandlerKeywordNest;
 
-},{"./EntryHandlerKeyword":33,"jsonld-context-parser":12}],39:[function(require,module,exports){
+},{"./EntryHandlerKeyword":34,"jsonld-context-parser":13}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordType = void 0;
@@ -8585,7 +8702,7 @@ class EntryHandlerKeywordType extends EntryHandlerKeyword_1.EntryHandlerKeyword 
 }
 exports.EntryHandlerKeywordType = EntryHandlerKeywordType;
 
-},{"../../Util":24,"../EntryHandlerPredicate":32,"./EntryHandlerKeyword":33,"jsonld-context-parser":12}],40:[function(require,module,exports){
+},{"../../Util":25,"../EntryHandlerPredicate":33,"./EntryHandlerKeyword":34,"jsonld-context-parser":13}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordUnknownFallback = void 0;
@@ -8639,7 +8756,7 @@ EntryHandlerKeywordUnknownFallback.VALID_KEYWORDS_TYPES = {
     '@value': null,
 };
 
-},{"jsonld-context-parser":12}],41:[function(require,module,exports){
+},{"jsonld-context-parser":13}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntryHandlerKeywordValue = void 0;
@@ -8678,7 +8795,7 @@ class EntryHandlerKeywordValue extends EntryHandlerKeyword_1.EntryHandlerKeyword
 }
 exports.EntryHandlerKeywordValue = EntryHandlerKeywordValue;
 
-},{"./EntryHandlerKeyword":33}],42:[function(require,module,exports){
+},{"./EntryHandlerKeyword":34}],43:[function(require,module,exports){
 (function (Buffer){(function (){
 /*global Buffer*/
 // Named constants with unique integer values
@@ -9095,7 +9212,7 @@ Parser.C = C;
 module.exports = Parser;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":4}],43:[function(require,module,exports){
+},{"buffer":5}],44:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -9281,7 +9398,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -9302,7 +9419,7 @@ __exportStar(require("./lib/NamedNode"), exports);
 __exportStar(require("./lib/Quad"), exports);
 __exportStar(require("./lib/Variable"), exports);
 
-},{"./lib/BlankNode":45,"./lib/DataFactory":46,"./lib/DefaultGraph":47,"./lib/Literal":48,"./lib/NamedNode":49,"./lib/Quad":50,"./lib/Variable":51}],45:[function(require,module,exports){
+},{"./lib/BlankNode":46,"./lib/DataFactory":47,"./lib/DefaultGraph":48,"./lib/Literal":49,"./lib/NamedNode":50,"./lib/Quad":51,"./lib/Variable":52}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlankNode = void 0;
@@ -9320,7 +9437,7 @@ class BlankNode {
 }
 exports.BlankNode = BlankNode;
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataFactory = void 0;
@@ -9443,7 +9560,7 @@ class DataFactory {
 }
 exports.DataFactory = DataFactory;
 
-},{"./BlankNode":45,"./DefaultGraph":47,"./Literal":48,"./NamedNode":49,"./Quad":50,"./Variable":51}],47:[function(require,module,exports){
+},{"./BlankNode":46,"./DefaultGraph":48,"./Literal":49,"./NamedNode":50,"./Quad":51,"./Variable":52}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultGraph = void 0;
@@ -9464,7 +9581,7 @@ class DefaultGraph {
 exports.DefaultGraph = DefaultGraph;
 DefaultGraph.INSTANCE = new DefaultGraph();
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Literal = void 0;
@@ -9498,7 +9615,7 @@ exports.Literal = Literal;
 Literal.RDF_LANGUAGE_STRING = new NamedNode_1.NamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
 Literal.XSD_STRING = new NamedNode_1.NamedNode('http://www.w3.org/2001/XMLSchema#string');
 
-},{"./NamedNode":49}],49:[function(require,module,exports){
+},{"./NamedNode":50}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NamedNode = void 0;
@@ -9516,7 +9633,7 @@ class NamedNode {
 }
 exports.NamedNode = NamedNode;
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Quad = void 0;
@@ -9544,7 +9661,7 @@ class Quad {
 }
 exports.Quad = Quad;
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Variable = void 0;
@@ -9562,7 +9679,7 @@ class Variable {
 }
 exports.Variable = Variable;
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -9570,7 +9687,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./lib/Resolve"));
 
-},{"./lib/Resolve":53}],53:[function(require,module,exports){
+},{"./lib/Resolve":54}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
@@ -9790,7 +9907,7 @@ function isCharacterAllowedAfterRelativePathSegment(character) {
     return !character || character === '#' || character === '?' || character === '/';
 }
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 /*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
@@ -9857,7 +9974,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":4}],55:[function(require,module,exports){
+},{"buffer":5}],56:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -9988,7 +10105,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":7,"inherits":10,"readable-stream/lib/_stream_duplex.js":57,"readable-stream/lib/_stream_passthrough.js":58,"readable-stream/lib/_stream_readable.js":59,"readable-stream/lib/_stream_transform.js":60,"readable-stream/lib/_stream_writable.js":61,"readable-stream/lib/internal/streams/end-of-stream.js":65,"readable-stream/lib/internal/streams/pipeline.js":67}],56:[function(require,module,exports){
+},{"events":8,"inherits":11,"readable-stream/lib/_stream_duplex.js":58,"readable-stream/lib/_stream_passthrough.js":59,"readable-stream/lib/_stream_readable.js":60,"readable-stream/lib/_stream_transform.js":61,"readable-stream/lib/_stream_writable.js":62,"readable-stream/lib/internal/streams/end-of-stream.js":66,"readable-stream/lib/internal/streams/pipeline.js":68}],57:[function(require,module,exports){
 'use strict';
 
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
@@ -10117,7 +10234,7 @@ createErrorType('ERR_UNKNOWN_ENCODING', function (arg) {
 createErrorType('ERR_STREAM_UNSHIFT_AFTER_END_EVENT', 'stream.unshift() after end event');
 module.exports.codes = codes;
 
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 (function (process){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -10259,7 +10376,7 @@ Object.defineProperty(Duplex.prototype, 'destroyed', {
   }
 });
 }).call(this)}).call(this,require('_process'))
-},{"./_stream_readable":59,"./_stream_writable":61,"_process":43,"inherits":10}],58:[function(require,module,exports){
+},{"./_stream_readable":60,"./_stream_writable":62,"_process":44,"inherits":11}],59:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -10299,7 +10416,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":60,"inherits":10}],59:[function(require,module,exports){
+},{"./_stream_transform":61,"inherits":11}],60:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -11426,7 +11543,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../errors":56,"./_stream_duplex":57,"./internal/streams/async_iterator":62,"./internal/streams/buffer_list":63,"./internal/streams/destroy":64,"./internal/streams/from":66,"./internal/streams/state":68,"./internal/streams/stream":69,"_process":43,"buffer":4,"events":7,"inherits":10,"string_decoder/":70,"util":3}],60:[function(require,module,exports){
+},{"../errors":57,"./_stream_duplex":58,"./internal/streams/async_iterator":63,"./internal/streams/buffer_list":64,"./internal/streams/destroy":65,"./internal/streams/from":67,"./internal/streams/state":69,"./internal/streams/stream":70,"_process":44,"buffer":5,"events":8,"inherits":11,"string_decoder/":71,"util":4}],61:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -11628,7 +11745,7 @@ function done(stream, er, data) {
   if (stream._transformState.transforming) throw new ERR_TRANSFORM_ALREADY_TRANSFORMING();
   return stream.push(null);
 }
-},{"../errors":56,"./_stream_duplex":57,"inherits":10}],61:[function(require,module,exports){
+},{"../errors":57,"./_stream_duplex":58,"inherits":11}],62:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -12328,7 +12445,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../errors":56,"./_stream_duplex":57,"./internal/streams/destroy":64,"./internal/streams/state":68,"./internal/streams/stream":69,"_process":43,"buffer":4,"inherits":10,"util-deprecate":71}],62:[function(require,module,exports){
+},{"../errors":57,"./_stream_duplex":58,"./internal/streams/destroy":65,"./internal/streams/state":69,"./internal/streams/stream":70,"_process":44,"buffer":5,"inherits":11,"util-deprecate":72}],63:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -12538,7 +12655,7 @@ var createReadableStreamAsyncIterator = function createReadableStreamAsyncIterat
 
 module.exports = createReadableStreamAsyncIterator;
 }).call(this)}).call(this,require('_process'))
-},{"./end-of-stream":65,"_process":43}],63:[function(require,module,exports){
+},{"./end-of-stream":66,"_process":44}],64:[function(require,module,exports){
 'use strict';
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
@@ -12749,7 +12866,7 @@ function () {
 
   return BufferList;
 }();
-},{"buffer":4,"util":3}],64:[function(require,module,exports){
+},{"buffer":5,"util":4}],65:[function(require,module,exports){
 (function (process){(function (){
 'use strict'; // undocumented cb() API, needed for core, not for public API
 
@@ -12857,7 +12974,7 @@ module.exports = {
   errorOrDestroy: errorOrDestroy
 };
 }).call(this)}).call(this,require('_process'))
-},{"_process":43}],65:[function(require,module,exports){
+},{"_process":44}],66:[function(require,module,exports){
 // Ported from https://github.com/mafintosh/end-of-stream with
 // permission from the author, Mathias Buus (@mafintosh).
 'use strict';
@@ -12962,12 +13079,12 @@ function eos(stream, opts, callback) {
 }
 
 module.exports = eos;
-},{"../../../errors":56}],66:[function(require,module,exports){
+},{"../../../errors":57}],67:[function(require,module,exports){
 module.exports = function () {
   throw new Error('Readable.from is not available in the browser')
 };
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 // Ported from https://github.com/mafintosh/pump with
 // permission from the author, Mathias Buus (@mafintosh).
 'use strict';
@@ -13065,7 +13182,7 @@ function pipeline() {
 }
 
 module.exports = pipeline;
-},{"../../../errors":56,"./end-of-stream":65}],68:[function(require,module,exports){
+},{"../../../errors":57,"./end-of-stream":66}],69:[function(require,module,exports){
 'use strict';
 
 var ERR_INVALID_OPT_VALUE = require('../../../errors').codes.ERR_INVALID_OPT_VALUE;
@@ -13093,10 +13210,10 @@ function getHighWaterMark(state, options, duplexKey, isDuplex) {
 module.exports = {
   getHighWaterMark: getHighWaterMark
 };
-},{"../../../errors":56}],69:[function(require,module,exports){
+},{"../../../errors":57}],70:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":7}],70:[function(require,module,exports){
+},{"events":8}],71:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -13393,7 +13510,7 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":54}],71:[function(require,module,exports){
+},{"safe-buffer":55}],72:[function(require,module,exports){
 (function (global){(function (){
 
 /**
@@ -13464,4 +13581,4 @@ function config (name) {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[1]);
+},{}]},{},[2,1]);
