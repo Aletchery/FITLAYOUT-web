@@ -4,12 +4,14 @@
 FitLayout webové rozhranie je aplikácia vytvorená ako bakalárska práca ktorej zadaním bolo vytvoriť webové rozhranie v JavaScripte pre existujúcu aplikáciu FitLayout (http://fitlayout.github.io/). Tento dokument popisuje pripravenie a používanie aplikácie.
 
 **Stiahnutie potrebných balíkov** 
+
  Pred začiatkom používania aplikácie je potreba stiahnuť z npm potrebné balíky. Nasledujúci príkaz stiahne všetky potrebné balíky: 
    ~~~
    npm install
    ~~~
 
 **Spustenie**
+
 Pre spustenie aplikácie je potreba napísať príkaz
    ~~~
    npm run serve
