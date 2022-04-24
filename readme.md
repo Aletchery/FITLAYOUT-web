@@ -12,6 +12,8 @@ FitLayout webové rozhranie je aplikácia vytvorená ako bakalárska práca ktor
 
 **Spustenie**
 
+Pred spustením aplikácie je potreba v súbore **config.js** nastaviť ID repozitára ktoré bude použité pri spustení aplikácie.
+
 Pre spustenie aplikácie je potreba napísať príkaz
    ~~~
    npm run serve
