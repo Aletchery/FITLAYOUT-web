@@ -1,138 +1,99 @@
 //index.js
 //Adam Sevcik 2022
+// FitLayout web 
 
 const JsonLdParser = require("jsonld-streaming-parser").JsonLdParser;
+var id = require("./config.js").repo_id;  // Repository ID from config file
+const url = require("./config.js").url;   // Base url from config file
 
+// Set default repo
+document.getElementById("repository").value = id;
+document.getElementById("loading").style.display = "block";
 
-var boxesId=[];
-var boxes=[];
-var artID=[];
-var foundID = false;
-var pageWidth;
-var pageHeight;
-var tree=[];
-var boxTree=[];
-var target;
-var target_element;
-var last_active;
-var selected_box;
+// Global variables.
+var boxesId = [];           // Array of IDs of boxes
+var boxes = [];             // Array of boxes
+var selectedBoxes = [];     // Array of selected boxes from querry
+var Arts = [];              // Array of artifacts    
+var boxTree = [];           // Tree of boxes
+var targetBox;              // Targeted box
+var last_active;            // Last selected artifact
+var selected_box;           // Selected box
+var activeArt;              // Currently selected artifact
+var lastID;                 // ID of last working repository
+var target;                 // Selected artifact
 
-var id = "12425e9f-6cdd-4700-8e35-6a4c6504a258"
+// URLs to REST API.
+var prefix = url + "/r/" + id
+var create = prefix + "/artifact/create";
+var base = prefix + "/artifact/item/r:";
+var artifact = prefix + "/artifact";
+var query = prefix + "/repository/query/"
 
-var create= "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/create";
-var base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
-var artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
-var query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
-
-
-const fetchArts = () => {
-
-    console.log("Fetching arts!");
-    artID = [];
-    console.log(artID);
-
-    const myParser = new JsonLdParser();
-    myParser
-        .on('data', artifacts)
-        .on('error', console.error)
-        .on('end', list);
-
-fetch(artifact)
-  .then( body => {
-      if(body.ok) 
-      return body.text();
-      else {
-          artifacts(null);  
-      }
-  })
-  .then(data => {  
-          console.log(data);
-          myParser.write(data);
-          myParser.end();   
-  })
-}
-
-fetchArts();
-
-
-/*var box={
-    id: "",
-    backgroundColor: "",
-    posX: "",
-    posY: "",
-    widht: "",
-    height: "",
-    belongsTo:"",
-    color:"",
-    documentOrder:"",
-    fontFamily:"",
-    fontSize:"",
-    fontStyle:"",
-    fontWeight:"",
-    hasAttribute:"",
-    htmlTagName:"",
-    lineThrough:"",
-    underline:"",
-    visualHeight:"",
-    visualWidth:"",
-    visualX:"",
-    visualY:"",
-    type:""
-}*/
-
-
+// Modal windows
 const modal = document.getElementById("artModal");
 const queryModal = document.getElementById("queryModal")
 
-// Get the button that opens the modal
+// Navigation buttons
 var artBtn = document.getElementById("newArt");
 var queryBtn = document.getElementById("newQuery");
-// Get the <span> element that closes the modal
+var removeBtn = document.getElementById("removeQuery");
+
+// Modal closing buttons
 var closeArt = document.getElementById("closeNewArt");
 var closeQuery = document.getElementById("closeQuery");
 
-
-// When the user clicks the button, open the modal 
-artBtn.onclick = function() {
-  modal.style.display = "block";
+// Open modal window to create new artifact on click
+artBtn.onclick = function () {
+    modal.style.display = "block";
 }
 
-queryBtn.onclick = function() {
+// Open modal window to search boxes by querry on click
+queryBtn.onclick = function () {
     queryModal.style.display = "block";
 }
 
-// When the user clicks on <span> (x), close the modal
-closeArt.onclick = function() {
-  modal.style.display = "none";
+// Remove query search on click
+removeBtn.onclick = function () {
+    removeSearch();
 }
 
-closeQuery.onclick = function() {
+// When the user clicks on (x), close the modal
+closeArt.onclick = function () {
+    modal.style.display = "none";
+}
+
+// When the user clicks on (x), close the modal
+closeQuery.onclick = function () {
     queryModal.style.display = "none";
 }
 
 // When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == modal || event.target == queryModal) {
-    modal.style.display = "none";
-    queryModal.style.display = "none";
-  }
+window.onclick = function (event) {
+    if (event.target == modal || event.target == queryModal) {
+        modal.style.display = "none";
+        queryModal.style.display = "none";
+    }
 }
 
-// Add new art
+// New artifact submit button
 var submit = document.getElementById("submitBtn");
 
-submit.onclick = function(){
+// Add new art on click
+submit.onclick = function () {
+    // Get all information
     var url = document.getElementById("url").value;
     var widht = document.getElementById("width").value;
     var height = document.getElementById("height").value;
 
-    if(document.getElementById("gridRadios1").checked){
-       var service="FitLayout.Puppeteer";
+    if (document.getElementById("gridRadios1").checked) {
+        var service = "FitLayout.Puppeteer";
     }
-    else{
-        var service="FitLayout.CSSBox"
-    } 
-    
+    else {
+        var service = "FitLayout.CSSBox"
+    }
+
+    // Body of POST request
     const data = {
         "params": {
             "width": widht,
@@ -141,33 +102,36 @@ submit.onclick = function(){
         },
         "serviceId": service
     };
-    fetch(create,{
+    // Fetch request
+    fetch(create, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' }
     })
-    .then(response => response.json())
-    .then(response => {
-        console.log(response);
-        fetchArts()})
-    .catch( error => {
-        console.error('Error:', error);
-    });
+        .then(response => response.json())
+        .then(response => {
+            if (response.status === "error") {
+                alert("Wrong URL!")
+            }
+            else {
+                console.log(response);
+                fetchArts();
+            }
+        });
 
+    // Close window
     modal.style.display = "none";
+}
 
-    }
-
-
-
-// sparql 
-
+// Search querry submit button
 var submitQuery = document.getElementById("submitQuery");
 
-submitQuery.onclick = function(){
+// Serch by input query on click
+submitQuery.onclick = function () {
+    // Users query
     var queryParam = document.getElementById("query").value;
-        
-    fetch(query,{
+    // Fetch request
+    fetch(query, {
         method: 'POST',
         body: `PREFIX fl: <http://fitlayout.github.io/ontology/fitlayout.owl#>
         PREFIX r: <http://fitlayout.github.io/resource/>
@@ -177,414 +141,559 @@ submitQuery.onclick = function(){
         PREFIX segm: <http://fitlayout.github.io/ontology/segmentation.owl#>
         
         SELECT ?iri WHERE {  
-          ?iri `+ queryParam +`
+          ?iri `+ queryParam + `
         }
         ORDER BY ?time
         
         `,
         headers: { 'Content-Type': 'application/sparql-query' }
     })
-    .then(response => response.json())
-    .then(response => console.log(response))
-    .catch( error => {
-        console.error(error);
-    });
+        .then(response => response.json())
+        .then(response => selectBoxes(response))
+        .catch(error => {
+            alert("Wrong query!");
+            console.log(error);
+        });
 
+    // Close window
     queryModal.style.display = "none";
+}
 
-   //fetchArts(); 
-    }
-
-// change repository
-
+// Change repository button
 var repo = document.getElementById("set_repository");
 
-repo.onclick = function() {
-    
+// Change repository on click
+repo.onclick = function () {
     var repo_id = document.getElementById("repository");
-    new_id = repo_id.value;
-    if(new_id !== id){
-        artID = [];
-        document.getElementById("myUL").innerHTML = "";
-        id = new_id;
-        console.log("Changing repo id to: " + id);
-        create= "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/create";
-        base = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact/item/r:";
-        artifact = "https://layout.fit.vutbr.cz/api/r/" + id + "/artifact";
-        query = "https://layout.fit.vutbr.cz/api/r/" + id + "/repository/query/"
-        console.log(create);
-        fetchArts();
+    var newID = repo_id.value;
+    if (newID != id) {
+        removeSearch();
+        noArt();
+        lastID = id;
+        id = newID;
+        changeRepo(id);
+        disabler();
     }
-    
+
 }
 
-function main(){
-
+// Function to draw selected artifact on screen
+function drawArt() {
+    // Get position of each box
     position();
 
-    boxes.sort(function(a, b){
+    // Sort boxes by order
+    boxes.sort(function (a, b) {
         return a.documentOrder - b.documentOrder;
     });
-    
+
     const view = document.getElementById("view");
-    view.style.width = pageWidth + "px";
-    view.style.height = pageHeight + "px";
-     
-     //console.log(boxesId);
-     for(var i = 0; i<boxes.length;i++){
-            
-            const d = document.createElement('box-element');
-            
-            d.innerHTML = `
-            <box-element id="${boxes[i].id}" style="position: absolute; top: ${boxes[i].posY}px; left: ${ boxes[i].posX }px; width: ${boxes[i].widht}px;
-            height: ${ boxes[i].height }px; background-color:#${ boxes[i].backgroundColor }; color:#${boxes[i].color}; font-size:${
-            boxes[i].fontSize }px; font-weight: ${ boxes[i].fontWeight}; font-family:${ boxes[i].fontFamily}; font-style: ${boxes[i].fontStyle};
-             border-left:${ boxes[i].borderL.borderWidth}px ${ boxes[i].borderL.borderStyle } #${ boxes[i].borderL.borderColor };
-             border-right:${ boxes[i].borderR.borderWidth}px ${ boxes[i].borderR.borderStyle } #${ boxes[i].borderR.borderColor };
-             border-top:${ boxes[i].borderT.borderWidth}px ${ boxes[i].borderT.borderStyle } #${ boxes[i].borderT.borderColor };
-             border-bottom:${ boxes[i].borderB.borderWidth}px ${ boxes[i].borderB.borderStyle } #${ boxes[i].borderB.borderColor };
+
+    document.getElementById("loading").style.display = "none";
+
+    // Go trough all boxes to make custom element and draw them on screen
+    for (var i = 0; i < boxes.length; i++) {
+
+        const d = document.createElement('box-element');
+        
+        d.innerHTML = `
+            <box-element id="${boxes[i].id}" style="position: absolute; top: ${boxes[i].posY}px; left: ${boxes[i].posX}px; width: ${boxes[i].widht}px;
+            height: ${boxes[i].height}px; background-color:#${boxes[i].backgroundColor}; color:#${boxes[i].color}; font-size:${boxes[i].fontSize}px; font-weight: ${boxes[i].fontWeight}; font-family:${boxes[i].fontFamily}; font-style: ${boxes[i].fontStyle};
+             border-left:${boxes[i].borderL.borderWidth}px ${boxes[i].borderL.borderStyle} #${boxes[i].borderL.borderColor};
+             border-right:${boxes[i].borderR.borderWidth}px ${boxes[i].borderR.borderStyle} #${boxes[i].borderR.borderColor};
+             border-top:${boxes[i].borderT.borderWidth}px ${boxes[i].borderT.borderStyle} #${boxes[i].borderT.borderColor};
+             border-bottom:${boxes[i].borderB.borderWidth}px ${boxes[i].borderB.borderStyle} #${boxes[i].borderB.borderColor};
              white-space: nowrap;">
-            ${ boxes[i].text }
+            ${boxes[i].text}
             </box-element>
              `;
-             view.appendChild(d);
+        view.appendChild(d);
 
-        
-     }
-     boxTreeMaker();
-     box_list(boxTree);
-     view.classList.toggle("visibility");
-     view.addEventListener("click", function(event){
-         console.log(event.target.id + "_node");
-         clickFunction(event.target.id + "_node", event.target.id,"box");
-     })
+
+    }
+    boxTreeMaker();
+    box_list(boxTree);
+
+    // onClick function to all boxes in order to interact with them
+    view.onclick = function (event) {
+        clickFunction(event.target.id + "_node", event.target.id, "box");
+    };
+
+    highlightQuery()
 
 }
 
-function position(){
-    boxes.forEach(function(box){
-        if(result = boxes.find( ({ id }) => id === box.boundsid)){
+// Start of script
+fetchArts();
+
+// Function to fetch repository from REST API
+function fetchArts() {
+
+
+    const myParser = new JsonLdParser();
+    myParser
+        .on('data', artifacts)
+        .on('error', () => {
+            console.error;
+        })
+        .on('end', list);
+
+    fetch(artifact)
+        .then(body => {
+            if (body.ok) {
+                return body.text();
+            }
+            else {
+                artifacts(null);
+            }
+        })
+        .then(data => {
+            myParser.write(data);
+            myParser.end();
+        })
+}
+
+// Change used repository
+function changeRepo(id) {
+    prefix = url + "/r/" + id;
+    // Set all URLs to new repository id
+    create = prefix + "/artifact/create";
+    base = prefix + "/artifact/item/r:";
+    artifact = prefix + "/artifact";
+    query = prefix + "/repository/query/";
+
+    cleanRepo();
+    fetchArts();
+}
+
+// Remove search 
+function removeSearch() {
+    highlightArts();
+    highlightQuery();
+
+    document.getElementById("removeQuery").style.display = "none";
+    selectedBoxes = [];
+}
+
+// Extract artifact id from IRI
+function getArtfromIRI(iri) {
+    return iri.substring(iri.lastIndexOf('/') + 1, iri.lastIndexOf('#'));
+}
+
+// Extract box id from IRI
+function getIDfromIRI(iri) {
+    return iri.substring(iri.lastIndexOf('/') + 1, iri.lenght);
+}
+
+// Clean list of artifacts used when changing repository
+function cleanRepo() {
+    Arts = [];
+    document.getElementById("myUL").innerHTML = "";
+}
+
+// Find boxes and artifacts with selected boxes across whole repository
+function selectBoxes(result) {
+    highlightQuery();
+    highlightArts();
+    
+    const boxes = result.results.bindings;
+
+    selectedBoxes = [];
+
+    boxes.forEach(box => {
+        var art = getArtfromIRI(box.iri.value);
+        var ID = getIDfromIRI(box.iri.value);
+
+        var found = selectedBoxes.find(Element => Element.art === art);
+        if (found) {
+            found.boxes.push(ID);
+        }
+        else {
+            var selectedArt = {
+                art: art,
+                boxes: [ID]
+            }
+            selectedBoxes.push(selectedArt);
+        }
+    });
+
+    if (selectedBoxes.length == 0) {
+        alert("No boxes match this query!");
+        removeBtn.style.display = "none";
+    }
+    else (removeBtn.style.display = "block")
+
+    console.log(selectedBoxes);
+    highlightQuery();
+    highlightArts();
+
+}
+
+// Highlight found boxes 
+function highlightQuery() {
+
+    var found = selectedBoxes.find(Element => Element.art === activeArt);
+    if (found) {
+        found.boxes.forEach(box => {
+            document.getElementById(box).classList.toggle("selection");
+            document.getElementById(box + "_node").classList.toggle("selection");
+        });
+    }
+}
+
+// Highlight artifacts containing found boxes
+function highlightArts() {
+    selectedBoxes.forEach(element => {
+        document.getElementById(element.art).classList.toggle("selection");
+    })
+}
+
+// Set position to boxes 
+function position() {
+    boxes.forEach(function (box) {
+        if (result = boxes.find(({ id }) => id === box.boundsid)) {
             box.posX = result.posX;
             box.posY = result.posY;
             box.widht = result.widht;
             box.height = result.height;
-            
+
             const index = boxes.indexOf(result);
             if (index > -1) {
-              boxes.splice(index, 1);
+                boxes.splice(index, 1);
             }
         }
     })
 }
 
-function artifacts(data){
+// Save artifacts from parser to list  
+function artifacts(data) {
+    document.getElementById("loading").style.display = "none";
 
-    if(data != null){
-    var predicate = data.predicate.value;
-    var subject = data.subject.value;
-    
-    var lastIndexS = subject.lastIndexOf('/')+1;
-    var id = subject.substr(lastIndexS,subject.lenght);
+    if (data != null) {
+        var predicate = data.predicate.value;
+        var subject = data.subject.value;
 
-    if(predicate.includes("hasParentArtifact")){
-        var object = data.object.value;
-        
-        var lastIndexO = object.lastIndexOf('/')+1;
-        var parentId = object.substr(lastIndexO,object.lenght);
+        var id = getIDfromIRI(subject);
+        // Check if artifact has parent
+        if (predicate.includes("hasParentArtifact")) {
+            var object = data.object.value;
 
-        var found = false;
-        artID.forEach(function(art){
-            if(art.id == id){
-                found = true;
-                art.parentID = parentId;
+            var parentId = getIDfromIRI(object);
+
+            var found = false;
+            Arts.forEach(function (art) {
+                if (art.id == id) {
+                    found = true;
+                    art.parentID = parentId;
+                }
+            })
+            // Artifact already exists in list
+            if (found == false) {
+                var art = {
+                    id: id,
+                    parentID: parentId
+                }
+                Arts.push(art);
             }
-        })
-        
-        
-    if(found == false){
-        var art={
-            id: id,
-            parentID: parentId
         }
-        artID.push(art);
-        }
-    }
-    else{
-        var found = false;
-        artID.forEach(function(art){
-            if(art.id == id){
-                found = true;
+        // Artifact without parent
+        else {
+            var found = false;
+            Arts.forEach(function (art) {
+                if (art.id == id) {
+                    found = true;
+                }
+            })
+            if (found == false) {
+                var art = {
+                    id: id,
+                    parentID: null
+                }
+
+                Arts.push(art);
             }
-        })
-        if(found == false){
-            var art={
-                id: id,
-                parentID: null
-            }
-            
-            artID.push(art);
-        }
         }
     }
     else {
-        var list = document.getElementById("list");
-
-        list.innerHTML = "Empty or wrong repository!"
+        alert("Empty or wrong repository!");
+        disabler();
+        id = lastID;
+        changeRepo(id);
     }
 }
-function box_list(boxes_list){  
+
+// Make list out of tree of boxes
+function box_list(boxesTree) {
     const box_ul = document.getElementById("myUL2");
-    
-    main_recursion(boxes_list[0],box_ul.id,"box");
+
+    main_recursion(boxesTree[0], box_ul.id, "box");
 
     var toggler = document.getElementsByClassName("caret");
     var i;
 
-    box_ul.addEventListener("click", function(event) {    
-        clickFunction(event.target.id,event.target.innerHTML,"box");  
-    });
-   
+    // onClick on list of boxes in order to interact with boxes
+    box_ul.onclick = function (event) {
+        clickFunction(event.target.id, event.target.innerHTML, "box");
+    };
+
     for (i = 0; i < toggler.length; i++) {
-    toggler[i].addEventListener("click", function() {
-    this.parentElement.querySelector(".nested").classList.toggle("active");
-    this.classList.toggle("caret-down");
-        });
-    } 
-      
+        toggler[i].onclick = function () {
+            this.parentElement.querySelector(".nested").classList.toggle("active");
+            this.classList.toggle("caret-down");
+        };
+    }
+
 }
 
-function main_recursion(Element,box,list){
-    if(Element.kids){   
-        parent(Element,box,list);
+
+// Main recursion to make tree of boxes from array
+function main_recursion(Element, box, list) {
+    if (Element.kids) {
+        parent(Element, box, list);
     }
-    else{
-        child(Element,box,list);
-        
+    else {
+        child(Element, box, list);
+
     }
 }
 
-function parent(Element,box,list){
+// Helping function to make tree of boxes
+function parent(Element, box, list) {
     var li = document.createElement('li');
-    li.setAttribute("class","text-center");
-    li.setAttribute("id",Element.id);
+    li.setAttribute("id", Element.id);
     var span = document.createElement('span');
     span.setAttribute("class", "caret");
-    span.setAttribute("id",Element.id+"_node");
+    span.setAttribute("id", Element.id + "_node");
     span.textContent = Element.id;
     li.appendChild(span);
 
-    if(list == 'art'){
+    if (list == 'art') {
         var delete_btn = document.createElement('span');
-        delete_btn.setAttribute("id",Element.id+"_delete");
-        delete_btn.setAttribute("class","end-0 float-right");
+        delete_btn.setAttribute("id", Element.id + "_delete");
+        delete_btn.setAttribute("class", "end-0 float-right");
         delete_btn.innerHTML = "&#10060";
         var segment_btn = document.createElement('span');
-        segment_btn.setAttribute("id",Element.id+"_segment");
-        segment_btn.setAttribute("class","float-right mr-20");
+        segment_btn.setAttribute("id", Element.id + "_segment");
+        segment_btn.setAttribute("class", "float-right mr-20");
         segment_btn.innerHTML = "SEG";
         li.appendChild(delete_btn);
         li.appendChild(segment_btn);
-        
+
     }
-    
-    
-    
 
-    var ul=document.createElement('ul');
-            ul.setAttribute("class", "nested");
-            ul.setAttribute("id",Element.id+"_ul");
-            li.appendChild(ul);
-        document.getElementById(box).appendChild(li);        
+    var ul = document.createElement('ul');
+    ul.setAttribute("class", "nested");
+    ul.setAttribute("id", Element.id + "_ul");
+    li.appendChild(ul);
+    document.getElementById(box).appendChild(li);
 
-    Element.kids.forEach(function(kid){
-        if(result = boxTree.find( ({ id }) => id === kid)){
-           parent(result,ul.id,list); 
+    Element.kids.forEach(function (kid) {
+        if (result = boxTree.find(({ id }) => id === kid)) {
+            parent(result, ul.id, list);
         }
-        else{
-            child(kid,ul,list);
+        else {
+            child(kid, ul, list);
         }
-        
+
     });
-        
 }
 
-
-function child(Element,box,list){
+// Helping function to make tree of boxes
+function child(Element, box, list) {
     var kidLi = document.createElement('li');
-    kidLi.setAttribute("class","position-relative");
-    kidLi.setAttribute("id",Element+"_node");
+    kidLi.setAttribute("class", "position-relative");
+    kidLi.setAttribute("id", Element + "_node");
     kidLi.textContent = Element;
-    if(list == 'art'){
+    if (list == 'art') {
         var delete_btn = document.createElement('span');
-        delete_btn.setAttribute("id",Element+"_delete");
-        delete_btn.setAttribute("class","end-0");
-        delete_btn.setAttribute("class","position-absolute end-0");
-        delete_btn.textContent = "&#10060";
+        delete_btn.setAttribute("id", Element + "_delete");
+        delete_btn.setAttribute("class", "end-0");
+        delete_btn.setAttribute("class", "position-absolute end-0");
+        delete_btn.innerHTML = "&#10060";
         kidLi.appendChild(delete_btn);
     }
-    
+
     box.appendChild(kidLi);
 }
 
+// Interact with artifacts and boxes by clicking
+function clickFunction(listid, boxid, list) {
 
-function clickFunction(listid,boxid,list){      
-        if(list == "box"){ 
-            if(target_element){
-                target_element.classList.remove("highlight");
-            }
-            if(selected_box){
-                selected_box.classList.remove("selected");
-            }
-            selected_box = document.getElementById(boxid);
-            selected_box.classList.add("selected");
-            target_element = document.getElementById(listid);
-            target_element.classList.add("highlight");
-            var parent = target_element.parentElement;
-            while(parent != document.getElementById("myUL2")){
-                console.log(parent.id);
-                parent.classList.add("active");
-                parent = parent.parentElement;
-
-            }
-            target_element.scrollIntoView();
-            
-
-            showBoxInfo(boxid);
+    // Interact with boxes
+    if (list == "box") {
+        if (targetBox) {
+            targetBox.classList.remove("highlight");
         }
-        else{
-            target = event.target.innerHTML; 
-            if(listid.includes("_delete")){
-                const id = listid.replace("_delete","");
+        if (selected_box) {
+            selected_box.classList.remove("selected");
+        }
+        selected_box = document.getElementById(boxid);
+        selected_box.classList.add("selected");
+        targetBox = document.getElementById(listid);
+        targetBox.classList.add("highlight");
+        var parent = targetBox.parentElement;
+        while (parent != document.getElementById("myUL2")) {
+            parent.classList.add("active");
+            parent = parent.parentElement;
+        }
 
-                const arturl = base + id;
-                console.log("Fetch DELETE to: " + arturl);
-                fetch(arturl, {
+        showBoxInfo(boxid);
+    }
+    // Interact with artifacts
+    else {
+        var id = event.target.id; 
+
+        if (listid.includes("_node")){
+            id = listid.replace("_node", "");
+        }
+        // Delete artifact
+        if (listid.includes("_delete")) {
+            id = listid.replace("_delete", "");
+
+            const arturl = base + id;
+            fetch(arturl, {
                 method: 'DELETE',
             })
-            .then(res => res.text()) // or res.json()
-            .then(res => console.log(res));
-            
+                .then(res => res.text()) 
+                .then(res => console.log(res));
+
             var deletedLi = document.getElementById(id);
             deletedLi.remove();
 
-            }
-            else if(listid.includes("_segment")){
-                const id = listid.replace("_segment","");            
-                const parentIri = "http://fitlayout.github.io/resource/" + id;
+        }
+        // Segment artifact
+        else if (listid.includes("_segment")) {
+            id = listid.replace("_segment", "");
+            const parentIri = "http://fitlayout.github.io/resource/" + id;
 
-                const data = {
-                    "params": {
-                        "pDoC": 9
-                    },
-                        "serviceId": "FitLayout.VIPS",
-                        "parentIti": parentIri
-                    };
-                    
-                    fetch(create,{
-                        method: 'POST',
-                        body: JSON.stringify(data),
-                        headers: { 'Content-Type': 'application/json' }
-                    })
-                    .then(response => response.json())
-                    .catch((error) => {
-                         console.error('Error:', error);
-                    });
-                    //location.reload()
-            }
-            else{
-            
-            if(last_active != document.getElementById(listid)){
-                if(last_active){
+            const data = {
+                "params": {
+                    "pDoC": 9
+                },
+                "serviceId": "FitLayout.VIPS",
+                "parentIri": parentIri
+            };
+
+            fetch(create, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+
+        }
+        // Choose artifact
+        else {
+
+            if (last_active != document.getElementById(id + "_node") && last_active != document.getElementById(id)) {
+                if (last_active) {
                     last_active.classList.remove("highlight");
                 }
-                console.log(last_active)
-            last_active = document.getElementById(listid);
+                
+                last_active = document.getElementById(id + "_node");
 
-            last_active.classList.add("highlight");  
+                last_active.classList.add("highlight");
 
-            
-            boxes = [];
-            boxTree = [];
-            //console.log(boxes);
-            document.getElementById("bottom").innerHTML = "";
-            document.getElementById("myUL2").innerHTML = "";
-            document.getElementById("view").innerHTML = "";
-            document.getElementById("view").classList.toggle("visibility");
-            
-            document.getElementById("loading").style.visibility = "visible";
-            getArt(target);
+                noArt();
+                target = id;
+                getArt(id);
             }
         }
     }
 }
 
+// Helping function to remove selection of artifact
+function noArt() {
+    boxes = [];
+    boxTree = [];
 
-function list(){
+    document.getElementById("bottom").innerHTML = "";
+    document.getElementById("myUL2").innerHTML = "";
+    document.getElementById("view").innerHTML = "";
+
+    document.getElementById("loading").style.display = "block";
+}
+
+// Make list of artifact out of tree of artifacts
+function list() {
+    disabler();
     treeMaker();
-        
-    const art_ul = document.getElementById("myUL");
+
+    var art_ul = document.getElementById("myUL");
+    art_ul.innerHTML = "";
+
     tree.forEach(node => main_recursion(node, art_ul.id, "art"));
 
-    art_ul.addEventListener("click", function(event) {
-    clickFunction(event.target.id,0,"art");
-    });
+    art_ul.onclick = function (event) {
+        clickFunction(event.target.id, 0, "art");
+    };
     var toggler = document.getElementsByClassName("caret");
-  
+
     for (var i = 0; i < toggler.length; i++) {
-    toggler[i].addEventListener("click", function() {
-    this.parentElement.querySelector(".nested").classList.toggle("active");
-    this.classList.toggle("caret-down");
-  });
-}
-    if (art_ul.innerHTML.trim == ""){
+        toggler[i].onclick = function () {
+            this.parentElement.querySelector(".nested").classList.toggle("active");
+            this.classList.toggle("caret-down");
+        };
+    }
+    if (art_ul.innerHTML.trim == "") {
         art_ul.innerHTML = "Empty or wrong repository"
     }
-    
+
 }
 
-function getArt(target){
+// Fetch selected artifact from REST API
+function getArt(target) {
+    disabler();
+
     const artParser = new JsonLdParser();
     artParser
-    .on('data', saveObject)
-    .on('error', console.error)
-    .on('end', main);
+        .on('data', saveArt)
+        .on('error', console.error)
+        .on('end', drawArt);
 
-    url = base + target;
+    targetUrl = base + target;
+    activeArt = target;
 
-    artID.forEach(function(art){
-        
-        if(art.id == target && art.parentID != null){
-            url = base + art.parentID
-        }
-    })
-    console.log("GET: " + url);
-
-    fetch(url,{
+    
+    console.log("GET: " + targetUrl);
+    fetch(targetUrl, {
         method: 'GET',
         headers: { 'Accept': 'application/ld+json' }
     })
-    .then(function(body){
-        return body.text();
-    }).then(function(data) {
-        console.log(data);
-        artParser.write(data);
-        artParser.end();
-    });
-    
+        .then(function (body) {
+            return body.text();
+        }).then(function (data) {
+            console.log(data);
+            artParser.write(data);
+            disabler();
+            artParser.end();
+        });
+
 }
 
-function showBoxInfo(id){
+// Helping function to enable/disable buttons
+function disabler() {
+    queryBtn.disabled = !queryBtn.disabled;
+    artBtn.disabled = !artBtn.disabled;
+    repo.disabled = !repo.disabled;
+    removeBtn.disabled = !removeBtn.disabled;
+}
 
-    //console.log(id);
+// Write info about selected box to table
+function showBoxInfo(id) {
+
     var foundBox;
-    boxes.forEach(function(box){
-        if(box.id == id){
+    boxes.forEach(function (box) {
+        if (box.id == id) {
             foundBox = box;
         }
     })
-        //console.log(foundBox);
-        var window = document.getElementById("bottom");
-        window.innerHTML = `
+    // Create table with info
+    var window = document.getElementById("bottom");
+    window.innerHTML = `
         <table>
         <tr>
           <th>Attribute</th>
@@ -686,129 +795,117 @@ function showBoxInfo(id){
       </table>`
 }
 
-function boxTreeMaker(){
-    
+// Helping function to make tree out of array of boxes
+function boxTreeMaker() {
+
     var result;
-    boxes.forEach(function(box){
-    if(box.type == "Box" || box.type == "Border"){
-        
-        if(box.isChildOf){
-            
-          if(result = boxTree.find( ({ id }) => id === box.isChildOf)){
-                result.kids.push(box.id);
+    boxes.forEach(function (box) {
+        if (box.type == "Box" || box.type == "Border") {
 
-              var node = {
-              id: box.id,
-              kids:[],
+            if (box.isChildOf) {
+                if (result = boxTree.find(({ id }) => id === box.isChildOf)) {
+                    result.kids.push(box.id);
+
+                    var node = {
+                        id: box.id,
+                        kids: [],
+                    }
+                    boxTree.push(node);
+                }
             }
-            boxTree.push(node);
-          }
-        }
-        else if(box.isChildOf == null){
-            if(result = boxTree.find( ({ id }) => id === box.id)){
-                console.log(box.id);
-                return;
-          }
-          else{
-              var node = {
-              id: box.id,
-              kids:[],
+            else if (box.isChildOf == null) {
+                if (result = boxTree.find(({ id }) => id === box.id)) {
+                    return;
+                }
+                else {
+                    var node = {
+                        id: box.id,
+                        kids: [],
+                    }
+                    boxTree.push(node);
+                }
             }
-            boxTree.push(node);
-          }
         }
-        }
-     }) 
-     //console.log(boxTree);
-     //console.log(boxes);
-    }
-      
+    })
+}
 
+// Helping function to make tree out of array of artifacts
+function treeMaker() {
+    tree = [];
+    for (var i = 0; i < Arts.length; i++) {
 
-function treeMaker(){
-    
-    for(var i=0; i<artID.length; i++){
-        
-        if(!artID[i].parentID){
-            //console.log(artID[i]);
-            var parent={
-                id: artID[i].id,
+        if (!Arts[i].parentID) {
+
+            var parent = {
+                id: Arts[i].id,
                 kids: []
             }
-            for (var j=0; j<artID.length; j++){
-                if(artID[j].parentID){
-                    if(artID[j].parentID == artID[i].id){
-                        parent.kids.push(artID[j].id);
+            for (var j = 0; j < Arts.length; j++) {
+                if (Arts[j].parentID) {
+                    if (Arts[j].parentID == Arts[i].id) {
+                        parent.kids.push(Arts[j].id);
                     }
                 }
             }
             tree.push(parent);
+        }
     }
-    
-}
-//console.log(tree);
 }
 
-function saveObject(data){
+// Main function to save all info about selected artifact into object
+function saveArt(data) {
 
     var object = data.object.value;
 
-    if(object.includes('width=')){
-  
-    pageWidth = object.substr(object.indexOf('width=')+6, object.lenght);
-    pageWidth = pageWidth.substr(0,pageWidth.indexOf(' '));
-    
-    
-    pageHeight = object.substr(object.indexOf('height=')+7, object.lenght);
-    pageHeight = pageHeight.substr(0,pageHeight.indexOf(' '));
-    
-    }
-    var lastIndexO = object.lastIndexOf('#')+1;
-    var value = object.substr(lastIndexO,object.lenght);
-   
+    var lastIndexO = object.lastIndexOf('#') + 1;
+    var value = object.substr(lastIndexO, object.lenght);
+
 
     var subject = data.subject.value;
-    var lastIndexS = subject.lastIndexOf('/')+1;
-    var id = subject.substr(lastIndexS,subject.lenght);
+    var id = subject.substr(subject.lastIndexOf('/') + 1, subject.lenght);
+
 
     var borderS = "";
-    
-    if(id.includes("Btop")){
-        id = id.replace('Btop','');
+
+    if (id.includes("Btop")) {
+        id = id.replace('Btop', '');
         borderS = "top";
     }
-    if(id.includes("Bbottom")){
-        id = id.replace('Bbottom','');
+    if (id.includes("Bbottom")) {
+        id = id.replace('Bbottom', '');
         borderS = "bottom";
     }
-    if(id.includes("Bleft")){
-        id = id.replace('Bleft','');
+    if (id.includes("Bleft")) {
+        id = id.replace('Bleft', '');
         borderS = "left";
     }
-    if(id.includes("Bright")){
-        id = id.replace('Bright','');
+    if (id.includes("Bright")) {
+        id = id.replace('Bright', '');
         borderS = "right";
     }
 
-    if(value == "Box"){
+    if (value == "Box") {
         boxesId.push(id);
     }
 
     var predicate = data.predicate.value;
-    var lastIndexP = predicate.lastIndexOf('#')+1;
-    var type = predicate.substr(lastIndexP,predicate.lenght);
+    var type = predicate.substr(predicate.lastIndexOf('#') + 1, predicate.lenght);
 
-        for(var i = 0; i<boxes.length;i++){
-            
-            if(id==boxes[i].id){
-                foundID = true;
-                
-                    if(borderS=="top"){
-                    switch (type) {
-                    case "borderColor": 
+    var foundID = false;
+
+    if (type == "pngImage") pageImg = object.value;
+
+    for (var i = 0; i < boxes.length; i++) {
+        // Box already exists in array
+        if (id == boxes[i].id) {
+            foundID = true;
+
+            if (borderS == "top") {
+                switch (type) {
+                    case "borderColor":
                         boxes[i].borderT.borderColor = value;
                         break;
-                    case "borderStyle": 
+                    case "borderStyle":
                         boxes[i].borderT.borderStyle = value;
                         break;
                     case "borderWidth":
@@ -816,14 +913,14 @@ function saveObject(data){
                         break;
                     default:
                         break;
-                        }
-                    }
-                    else if(borderS=="left"){
-                    switch (type) {
-                        case "borderColor": 
+                }
+            }
+            else if (borderS == "left") {
+                switch (type) {
+                    case "borderColor":
                         boxes[i].borderL.borderColor = value;
                         break;
-                    case "borderStyle": 
+                    case "borderStyle":
                         boxes[i].borderL.borderStyle = value;
                         break;
                     case "borderWidth":
@@ -831,14 +928,14 @@ function saveObject(data){
                         break;
                     default:
                         break;
-                        }
-                    }
-                    else if(borderS=="bottom"){
-                    switch (type) {
-                        case "borderColor": 
+                }
+            }
+            else if (borderS == "bottom") {
+                switch (type) {
+                    case "borderColor":
                         boxes[i].borderB.borderColor = value;
                         break;
-                    case "borderStyle": 
+                    case "borderStyle":
                         boxes[i].borderB.borderStyle = value;
                         break;
                     case "borderWidth":
@@ -846,14 +943,14 @@ function saveObject(data){
                         break;
                     default:
                         break;
-                        }
-                    }
-                    else if(borderS=="right"){
-                    switch (type) {
-                        case "borderColor": 
+                }
+            }
+            else if (borderS == "right") {
+                switch (type) {
+                    case "borderColor":
                         boxes[i].borderR.borderColor = value;
                         break;
-                    case "borderStyle": 
+                    case "borderStyle":
                         boxes[i].borderR.borderStyle = value;
                         break;
                     case "borderWidth":
@@ -861,284 +958,289 @@ function saveObject(data){
                         break;
                     default:
                         break;
-                        }
-                    }
-               
-                
-                switch (type) {
-                    case "bounds":
-                        boxes[i].boundsid = target + "#" + value;
-                        break;
-                    case "backgroundColor":
-                        boxes[i].backgroundColor = value;                  
-                        break;
-                    case "positionX":
-                        boxes[i].posX = value;                      
-                        break;
-
-                    case "positionY":
-                        boxes[i].posY = value;
-                        break;
-
-                    case "width":
-                        boxes[i].widht = value; 
-                        break;
-
-                    case "height":
-                        boxes[i].height = value;
-                        break;
-
-                    case "belongsTo":
-                        boxes[i].belongsTo = value;
-                        break;
-                    
-                    case "color":
-                        boxes[i].color = value;
-                        break;
-                    
-                    case "documentOrder":
-                        boxes[i].documentOrder = value;
-                        break;    
-                    
-                    case "fontFamily":
-                        boxes[i].fontFamily = value;
-                        break;
-
-                    case "fontSize":
-                        boxes[i].fontSize = value;
-                        break;
-
-                    case "fontStyle":
-                        boxes[i].fontStyle = value;
-                        break;
-
-                    case "fontWeight":
-                        if(value > 0,5){
-                            boxes[i].fontWeight = "bold";
-                        }
-                        else{
-                            boxes[i].fontWeight = "normal";
-                        }
-                        
-                        break;
-
-                    case "hasAttribute":
-                        boxes[i].hasAttribute = value;
-                        break;
-
-                    case "htmlTagName":
-                        boxes[i].htmlTagName = value;
-                        break;
-                    
-                    case "lineTrough":
-                        boxes[i].lineTrough = value;
-                        break;
-
-                    case "underLine":
-                        boxes[i].underLine = value;
-                        break;
-
-                    case "visualHeight":
-                        boxes[i].visualHeight = value;
-                        break;
-
-                    case "visualWidth":
-                        boxes[i].visualWidth = value;
-                        break;
-
-                    case "visualX":
-                        boxes[i].visualX = value;
-                        break;
-
-                    case "visualY":
-                        boxes[i].visualY = value;
-                        break;
-
-                    case "type":
-                        boxes[i].type = value;
-                        break;
-
-                    case "isChildOf":
-                        boxes[i].isChildOf = target + "#" + value;
-                        break;
-                    
-                    case "text":
-                        boxes[i].text = value;
-                        break;
-
-                    default:
-                        break;
                 }
             }
-        }
 
-        if(foundID == false){
-            var O ={id: id,
-                    boundsid: "",
-                    backgroundColor: "none",
-                    posX: "0",
-                    posY: "0",
-                    widht: "0",
-                    height: "0",
-                    belongsTo:"",
-                    color:"",
-                    documentOrder:"",
-                    fontFamily:"",
-                    fontSize:"",
-                    fontStyle:"",
-                    fontWeight:"",
-                    hasAttribute:"",
-                    htmlTagName:"",
-                    lineThrough:"none",
-                    underLine:"none",
-                    visualHeight:"",
-                    visualWidth:"",
-                    visualX:"",
-                    visualY:"",
-                    type:"",
-                    isChildOf: null,
-                    text:"",
-                    borderL : 
-                    {
-                    borderColor:"",
-                    borderWidth:"0",
-                    borderStyle:""},
-                    borderR : 
-                    {
-                    borderColor:"",
-                    borderWidth:"0",
-                    borderStyle:""},
-                    borderT : 
-                    {
-                    borderColor:"",
-                    borderWidth:"0",
-                    borderStyle:""},
-                    borderB : 
-                    {
-                    borderColor:"",
-                    borderWidth:"0",
-                    borderStyle:""}
-                    }
-
-                    if(borderS){
-                        O.border.side=borderS;
-                        switch (type) {
-                            case "borderColor": 
-                            O.border.borderColor = value;
-                            break;
-                        case "borderStyle": 
-                            O.border.borderStyle = value;
-                            break;
-                        case "borderWidth":
-                            O.border.borderWidth = value;
-                            break;
-                        default:
-                            break;
-                        }
-                    }
 
             switch (type) {
-                case "label":
-                    O.label = value;
+                case "bounds":
+                    boxes[i].boundsid = target + "#" + value;
                     break;
-
                 case "backgroundColor":
-                    O.backgroundColor = value;                  
+                    boxes[i].backgroundColor = value;
                     break;
-
                 case "positionX":
-                    O.posX = value;                      
+                    boxes[i].posX = value;
                     break;
 
                 case "positionY":
-                    O.posY = value;
+                    boxes[i].posY = value;
                     break;
 
                 case "width":
-                    O.widht = value; 
+                    boxes[i].widht = value;
                     break;
 
                 case "height":
-                    O.height = value;
+                    boxes[i].height = value;
                     break;
 
                 case "belongsTo":
-                    O.belongsTo = value;
+                    boxes[i].belongsTo = value;
                     break;
-                
+
                 case "color":
-                    O.color = value;
+                    boxes[i].color = value;
                     break;
-                
+
                 case "documentOrder":
-                    O.documentOrder = value;
-                    break;    
-                
+                    boxes[i].documentOrder = value;
+                    break;
+
                 case "fontFamily":
-                    O.fontFamily = value;
+                    boxes[i].fontFamily = value;
                     break;
 
                 case "fontSize":
-                    O.fontSize = value;
+                    boxes[i].fontSize = value;
                     break;
 
                 case "fontStyle":
-                    O.fontStyle = value;
+                    boxes[i].fontStyle = value;
                     break;
 
                 case "fontWeight":
-                    O.fontWeight = value;
+                    if (value > 0, 5) {
+                        boxes[i].fontWeight = "bold";
+                    }
+                    else {
+                        boxes[i].fontWeight = "normal";
+                    }
+
                     break;
 
                 case "hasAttribute":
-                    O.hasAttribute = value;
+                    boxes[i].hasAttribute = value;
                     break;
 
                 case "htmlTagName":
-                    O.htmlTagName = value;
+                    boxes[i].htmlTagName = value;
                     break;
-                
+
                 case "lineTrough":
-                    O.lineTrough = value;
+                    boxes[i].lineTrough = value;
                     break;
 
                 case "underLine":
-                    O.underLine = value;
+                    boxes[i].underLine = value;
                     break;
 
                 case "visualHeight":
-                    O.visualHeight = value;
+                    boxes[i].visualHeight = value;
                     break;
 
                 case "visualWidth":
-                    O.visualWidth = value;
+                    boxes[i].visualWidth = value;
                     break;
 
                 case "visualX":
-                    O.visualX = value;
+                    boxes[i].visualX = value;
                     break;
 
                 case "visualY":
-                    O.visualY = value;
+                    boxes[i].visualY = value;
                     break;
 
                 case "type":
-                    O.type = value;
+                    boxes[i].type = value;
                     break;
 
                 case "isChildOf":
-                    O.type = value;
+                    boxes[i].isChildOf = target + "#" + value;
                     break;
-                case "hasText":
-                    O.text = value;
+
+                case "text":
+                    boxes[i].text = value;
                     break;
-                
 
                 default:
                     break;
             }
-                boxes.push(O);
+        }
+    }
+    // New box 
+    if (foundID == false) {
+        var O = {
+            id: id,
+            boundsid: "",
+            backgroundColor: "none",
+            posX: "0",
+            posY: "0",
+            widht: "0",
+            height: "0",
+            belongsTo: "",
+            color: "",
+            documentOrder: "",
+            fontFamily: "",
+            fontSize: "",
+            fontStyle: "",
+            fontWeight: "",
+            hasAttribute: "",
+            htmlTagName: "",
+            lineThrough: "none",
+            underLine: "none",
+            visualHeight: "",
+            visualWidth: "",
+            visualX: "",
+            visualY: "",
+            type: "",
+            isChildOf: null,
+            text: "",
+            borderL:
+            {
+                borderColor: "",
+                borderWidth: "0",
+                borderStyle: ""
+            },
+            borderR:
+            {
+                borderColor: "",
+                borderWidth: "0",
+                borderStyle: ""
+            },
+            borderT:
+            {
+                borderColor: "",
+                borderWidth: "0",
+                borderStyle: ""
+            },
+            borderB:
+            {
+                borderColor: "",
+                borderWidth: "0",
+                borderStyle: ""
+            }
         }
 
-        foundID = false;
+        if (borderS) {
+            O.border.side = borderS;
+            switch (type) {
+                case "borderColor":
+                    O.border.borderColor = value;
+                    break;
+                case "borderStyle":
+                    O.border.borderStyle = value;
+                    break;
+                case "borderWidth":
+                    O.border.borderWidth = value;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        switch (type) {
+            case "label":
+                O.label = value;
+                break;
+
+            case "backgroundColor":
+                O.backgroundColor = value;
+                break;
+
+            case "positionX":
+                O.posX = value;
+                break;
+
+            case "positionY":
+                O.posY = value;
+                break;
+
+            case "width":
+                O.widht = value;
+                break;
+
+            case "height":
+                O.height = value;
+                break;
+
+            case "belongsTo":
+                O.belongsTo = value;
+                break;
+
+            case "color":
+                O.color = value;
+                break;
+
+            case "documentOrder":
+                O.documentOrder = value;
+                break;
+
+            case "fontFamily":
+                O.fontFamily = value;
+                break;
+
+            case "fontSize":
+                O.fontSize = value;
+                break;
+
+            case "fontStyle":
+                O.fontStyle = value;
+                break;
+
+            case "fontWeight":
+                O.fontWeight = value;
+                break;
+
+            case "hasAttribute":
+                O.hasAttribute = value;
+                break;
+
+            case "htmlTagName":
+                O.htmlTagName = value;
+                break;
+
+            case "lineTrough":
+                O.lineTrough = value;
+                break;
+
+            case "underLine":
+                O.underLine = value;
+                break;
+
+            case "visualHeight":
+                O.visualHeight = value;
+                break;
+
+            case "visualWidth":
+                O.visualWidth = value;
+                break;
+
+            case "visualX":
+                O.visualX = value;
+                break;
+
+            case "visualY":
+                O.visualY = value;
+                break;
+
+            case "type":
+                O.type = value;
+                break;
+
+            case "isChildOf":
+                O.type = value;
+                break;
+            case "hasText":
+                O.text = value;
+                break;
+
+
+            default:
+                break;
+        }
+        boxes.push(O);
+    }
+
+    foundID = false;
 }

@@ -4,19 +4,22 @@
 FitLayout webové rozhranie je aplikácia vytvorená ako bakalárska práca ktorej zadaním bolo vytvoriť webové rozhranie v JavaScripte pre existujúcu aplikáciu FitLayout (http://fitlayout.github.io/). Tento dokument popisuje pripravenie a používanie aplikácie.
 
 **Stiahnutie potrebných balíkov** 
-
  Pred začiatkom používania aplikácie je potreba stiahnuť z npm potrebné balíky. Nasledujúci príkaz stiahne všetky potrebné balíky: 
    ~~~
    npm install
    ~~~
 
+**Konfigurácia**
+V súbore **config.js** nájdete konfigurčné hodnoty pre **URL** použitého REST API a **id** použitého repozitára. Ak si prajete tieto hodnoty zmeniť jednoducho pred spustením aplikácie vymente prednastavené hodnoty za vaše hodnoty.
+   ~~~
+   repo_id: "12425e9f-6cdd-4700-8e35-6a4c6504a258"
+   url: "https://layout.fit.vutbr.cz/api"
+   ~~~
+
 **Spustenie**
-
-Pred spustením aplikácie je potreba v súbore **config.js** nastaviť ID repozitára ktoré bude použité pri spustení aplikácie.
-
 Pre spustenie aplikácie je potreba napísať príkaz
    ~~~
-   npm run serve
+   npm start
    ~~~
 Tento príkaz spustí na adrese http://192.168.0.105:9966/ server budo s aplikáciu v predvolenom prehliadači.
 
