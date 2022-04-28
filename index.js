@@ -22,13 +22,14 @@ var selected_box;           // Selected box
 var activeArt;              // Currently selected artifact
 var lastID;                 // ID of last working repository
 var target;                 // Selected artifact
+var parentTarget            // Parent of selected artifact
 
 // URLs to REST API.
 var prefix = url + "/r/" + id
 var create = prefix + "/artifact/create";
 var base = prefix + "/artifact/item/r:";
 var artifact = prefix + "/artifact";
-var query = prefix + "/repository/query/"
+var query = prefix + "/repository/query/?limit=1000"
 
 // Modal windows
 const modal = document.getElementById("artModal");
@@ -260,7 +261,7 @@ function changeRepo(id) {
     create = prefix + "/artifact/create";
     base = prefix + "/artifact/item/r:";
     artifact = prefix + "/artifact";
-    query = prefix + "/repository/query/";
+    query = prefix + "/repository/query/?limit=1000";
 
     cleanRepo();
     fetchArts();
@@ -293,6 +294,7 @@ function cleanRepo() {
 
 // Find boxes and artifacts with selected boxes across whole repository
 function selectBoxes(result) {
+    console.log(result);
     highlightQuery();
     highlightArts();
     
@@ -304,8 +306,7 @@ function selectBoxes(result) {
         var art = getArtfromIRI(box.iri.value);
         var ID = getIDfromIRI(box.iri.value);
 
-        var found = selectedBoxes.find(Element => Element.art === art);
-        if (found) {
+        if (found = selectedBoxes.find(Element => Element.art === art)) {
             found.boxes.push(ID);
         }
         else {
@@ -323,7 +324,6 @@ function selectBoxes(result) {
     }
     else (removeBtn.style.display = "block")
 
-    console.log(selectedBoxes);
     highlightQuery();
     highlightArts();
 
@@ -407,7 +407,7 @@ function artifacts(data) {
             if (found == false) {
                 var art = {
                     id: id,
-                    parentID: null
+                    parentID: null,
                 }
 
                 Arts.push(art);
@@ -457,7 +457,7 @@ function main_recursion(Element, box, list) {
     }
 }
 
-// Helping function to make tree of boxes
+// Helping function to make tree
 function parent(Element, box, list) {
     var li = document.createElement('li');
     li.setAttribute("id", Element.id);
@@ -470,7 +470,7 @@ function parent(Element, box, list) {
     if (list == 'art') {
         var delete_btn = document.createElement('span');
         delete_btn.setAttribute("id", Element.id + "_delete");
-        delete_btn.setAttribute("class", "end-0 float-right");
+        delete_btn.setAttribute("class", "float-right");
         delete_btn.innerHTML = "&#10060";
         var segment_btn = document.createElement('span');
         segment_btn.setAttribute("id", Element.id + "_segment");
@@ -498,7 +498,7 @@ function parent(Element, box, list) {
     });
 }
 
-// Helping function to make tree of boxes
+// Helping function to make tree
 function child(Element, box, list) {
     var kidLi = document.createElement('li');
     kidLi.setAttribute("class", "position-relative");
@@ -507,8 +507,7 @@ function child(Element, box, list) {
     if (list == 'art') {
         var delete_btn = document.createElement('span');
         delete_btn.setAttribute("id", Element + "_delete");
-        delete_btn.setAttribute("class", "end-0");
-        delete_btn.setAttribute("class", "position-absolute end-0");
+        delete_btn.setAttribute("class", "float-right");
         delete_btn.innerHTML = "&#10060";
         kidLi.appendChild(delete_btn);
     }
@@ -594,11 +593,14 @@ function clickFunction(listid, boxid, list) {
                 }
                 
                 last_active = document.getElementById(id + "_node");
-
                 last_active.classList.add("highlight");
 
                 noArt();
+
                 target = id;
+
+                parentTarget = Arts.find(({id}) => id === target).parentID;
+
                 getArt(id);
             }
         }
@@ -638,7 +640,7 @@ function list() {
             this.classList.toggle("caret-down");
         };
     }
-    if (art_ul.innerHTML.trim == "") {
+    if (art_ul.innerHTML.trim === "") {
         art_ul.innerHTML = "Empty or wrong repository"
     }
 
@@ -657,7 +659,13 @@ function getArt(target) {
     targetUrl = base + target;
     activeArt = target;
 
-    
+    Arts.forEach(function(art){
+        
+        if(art.id == target && art.parentID != null){
+            targetUrl = base + art.parentID
+        }
+    })
+
     console.log("GET: " + targetUrl);
     fetch(targetUrl, {
         method: 'GET',
@@ -666,7 +674,6 @@ function getArt(target) {
         .then(function (body) {
             return body.text();
         }).then(function (data) {
-            console.log(data);
             artParser.write(data);
             disabler();
             artParser.end();
@@ -799,16 +806,16 @@ function showBoxInfo(id) {
 function boxTreeMaker() {
 
     var result;
+
     boxes.forEach(function (box) {
         if (box.type == "Box" || box.type == "Border") {
-
             if (box.isChildOf) {
                 if (result = boxTree.find(({ id }) => id === box.isChildOf)) {
                     result.kids.push(box.id);
 
                     var node = {
                         id: box.id,
-                        kids: [],
+                        kids: []
                     }
                     boxTree.push(node);
                 }
@@ -820,7 +827,7 @@ function boxTreeMaker() {
                 else {
                     var node = {
                         id: box.id,
-                        kids: [],
+                        kids: []
                     }
                     boxTree.push(node);
                 }
@@ -835,7 +842,6 @@ function treeMaker() {
     for (var i = 0; i < Arts.length; i++) {
 
         if (!Arts[i].parentID) {
-
             var parent = {
                 id: Arts[i].id,
                 kids: []
@@ -863,6 +869,10 @@ function saveArt(data) {
 
     var subject = data.subject.value;
     var id = subject.substr(subject.lastIndexOf('/') + 1, subject.lenght);
+
+    if(parentTarget != null){
+        id = id.replace(parentTarget,target);
+    }
 
 
     var borderS = "";
@@ -893,7 +903,7 @@ function saveArt(data) {
 
     var foundID = false;
 
-    if (type == "pngImage") pageImg = object.value;
+    if (type === "pngImage") pageImg = object.value;
 
     for (var i = 0; i < boxes.length; i++) {
         // Box already exists in array
@@ -1063,13 +1073,17 @@ function saveArt(data) {
                     boxes[i].text = value;
                     break;
 
+                case "containsBox":
+                    boxes[i].containsBox = value;
+                    break;
+
                 default:
                     break;
             }
         }
     }
     // New box 
-    if (foundID == false) {
+    if (foundID === false) {
         var O = {
             id: id,
             boundsid: "",
@@ -1095,6 +1109,7 @@ function saveArt(data) {
             visualY: "",
             type: "",
             isChildOf: null,
+            containsBox: null,
             text: "",
             borderL:
             {
@@ -1234,7 +1249,9 @@ function saveArt(data) {
             case "hasText":
                 O.text = value;
                 break;
-
+            case "containsBox":
+                O.containsBox = value;
+                break
 
             default:
                 break;
