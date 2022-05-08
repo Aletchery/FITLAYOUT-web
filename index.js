@@ -12,14 +12,14 @@ document.getElementById("loading").style.display = "block";
 
 // Global variables.
 var boxesId = [];           // Array of IDs of boxes
+var segmId = [];            // Array of IDs of segments
 var boxes = [];             // Array of boxes
+var boxTree = [];           // Array that is tree of boxes
 var selectedBoxes = [];     // Array of selected boxes from querry
 var Arts = [];              // Array of artifacts    
-var boxTree = [];           // Tree of boxes
 var targetBox;              // Targeted box
-var last_active;            // Last selected artifact
 var selected_box;           // Selected box
-var activeArt;              // Currently selected artifact
+var activeArt = null;       // Currently selected artifact
 var lastID;                 // ID of last working repository
 var target;                 // Selected artifact
 var parentTarget            // Parent of selected artifact
@@ -84,7 +84,7 @@ var submit = document.getElementById("submitBtn");
 submit.onclick = function () {
     // Get all information
     var url = document.getElementById("url").value;
-    var widht = document.getElementById("width").value;
+    var width = document.getElementById("width").value;
     var height = document.getElementById("height").value;
 
     if (document.getElementById("gridRadios1").checked) {
@@ -97,7 +97,7 @@ submit.onclick = function () {
     // Body of POST request
     const data = {
         "params": {
-            "width": widht,
+            "width": width,
             "height": height,
             "url": url
         },
@@ -115,7 +115,8 @@ submit.onclick = function () {
                 alert("Wrong URL!")
             }
             else {
-                console.log(response);
+                alert("New artifact will be added shortly!");
+                disabler();
                 fetchArts();
             }
         });
@@ -145,7 +146,6 @@ submitQuery.onclick = function () {
           ?iri `+ queryParam + `
         }
         ORDER BY ?time
-        
         `,
         headers: { 'Content-Type': 'application/sparql-query' }
     })
@@ -169,11 +169,11 @@ repo.onclick = function () {
     var newID = repo_id.value;
     if (newID != id) {
         removeSearch();
-        noArt();
-        lastID = id;
+        noArt(true);
         id = newID;
         changeRepo(id);
         disabler();
+        activeArt = null;
     }
 
 }
@@ -192,27 +192,29 @@ function drawArt() {
 
     document.getElementById("loading").style.display = "none";
 
+    
+
     // Go trough all boxes to make custom element and draw them on screen
     for (var i = 0; i < boxes.length; i++) {
+        const box = document.createElement('box-element');
 
-        const d = document.createElement('box-element');
-        
-        d.innerHTML = `
-            <box-element id="${boxes[i].id}" style="position: absolute; top: ${boxes[i].posY}px; left: ${boxes[i].posX}px; width: ${boxes[i].widht}px;
-            height: ${boxes[i].height}px; background-color:#${boxes[i].backgroundColor}; color:#${boxes[i].color}; font-size:${boxes[i].fontSize}px; font-weight: ${boxes[i].fontWeight}; font-family:${boxes[i].fontFamily}; font-style: ${boxes[i].fontStyle};
-             border-left:${boxes[i].borderL.borderWidth}px ${boxes[i].borderL.borderStyle} #${boxes[i].borderL.borderColor};
-             border-right:${boxes[i].borderR.borderWidth}px ${boxes[i].borderR.borderStyle} #${boxes[i].borderR.borderColor};
-             border-top:${boxes[i].borderT.borderWidth}px ${boxes[i].borderT.borderStyle} #${boxes[i].borderT.borderColor};
-             border-bottom:${boxes[i].borderB.borderWidth}px ${boxes[i].borderB.borderStyle} #${boxes[i].borderB.borderColor};
-             white-space: nowrap;">
-            ${boxes[i].text}
-            </box-element>
-             `;
-        view.appendChild(d);
+        box.setAttribute("id",boxes[i].id);
+        box.setAttribute("style",`position: absolute; top: ${boxes[i].posY}px; left: ${boxes[i].posX}px; width: ${boxes[i].widht}px;
+        height: ${boxes[i].height}px; background-color:#${boxes[i].backgroundColor}; color:#${boxes[i].color}; font-size:${boxes[i].fontSize}px;
+         font-weight: ${boxes[i].fontWeight}; font-family:${boxes[i].fontFamily}; font-style: ${boxes[i].fontStyle};
+         border-left:${boxes[i].borderL.borderWidth}px ${boxes[i].borderL.borderStyle} #${boxes[i].borderL.borderColor};
+         border-right:${boxes[i].borderR.borderWidth}px ${boxes[i].borderR.borderStyle} #${boxes[i].borderR.borderColor};
+         border-top:${boxes[i].borderT.borderWidth}px ${boxes[i].borderT.borderStyle} #${boxes[i].borderT.borderColor};
+         border-bottom:${boxes[i].borderB.borderWidth}px ${boxes[i].borderB.borderStyle} #${boxes[i].borderB.borderColor};
+         white-space: nowrap;`)
 
+        box.innerHTML = boxes[i].text;
 
+        view.appendChild(box);
+    
     }
-    boxTreeMaker();
+
+    boxTree = boxTreeMaker();
     box_list(boxTree);
 
     // onClick function to all boxes in order to interact with them
@@ -252,6 +254,10 @@ function fetchArts() {
             myParser.write(data);
             myParser.end();
         })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert("Wrong REST API url!");
+          });
 }
 
 // Change used repository
@@ -294,7 +300,6 @@ function cleanRepo() {
 
 // Find boxes and artifacts with selected boxes across whole repository
 function selectBoxes(result) {
-    console.log(result);
     highlightQuery();
     highlightArts();
     
@@ -413,11 +418,14 @@ function artifacts(data) {
                 Arts.push(art);
             }
         }
+        lastID = document.getElementById("repository").value;
     }
     else {
-        alert("Empty or wrong repository!");
+        alert("Wrong repository!");
         disabler();
         id = lastID;
+        document.getElementById("repository").value = id;
+
         changeRepo(id);
     }
 }
@@ -426,7 +434,7 @@ function artifacts(data) {
 function box_list(boxesTree) {
     const box_ul = document.getElementById("myUL2");
 
-    main_recursion(boxesTree[0], box_ul.id, "box");
+    mainRecursion(boxesTree[0], box_ul.id, "box");
 
     var toggler = document.getElementsByClassName("caret");
     var i;
@@ -447,18 +455,18 @@ function box_list(boxesTree) {
 
 
 // Main recursion to make tree of boxes from array
-function main_recursion(Element, box, list) {
+function mainRecursion(Element, UL, list) {
     if (Element.kids) {
-        parent(Element, box, list);
+        parent(Element, UL, list);
     }
     else {
-        child(Element, box, list);
+        child(Element, UL, list);
 
     }
 }
 
 // Helping function to make tree
-function parent(Element, box, list) {
+function parent(Element, UL, list) {
     var li = document.createElement('li');
     li.setAttribute("id", Element.id);
     var span = document.createElement('span');
@@ -485,7 +493,7 @@ function parent(Element, box, list) {
     ul.setAttribute("class", "nested");
     ul.setAttribute("id", Element.id + "_ul");
     li.appendChild(ul);
-    document.getElementById(box).appendChild(li);
+    document.getElementById(UL).appendChild(li);
 
     Element.kids.forEach(function (kid) {
         if (result = boxTree.find(({ id }) => id === kid)) {
@@ -499,27 +507,32 @@ function parent(Element, box, list) {
 }
 
 // Helping function to make tree
-function child(Element, box, list) {
+function child(Element, UL, list) {
     var kidLi = document.createElement('li');
-    kidLi.setAttribute("class", "position-relative");
-    kidLi.setAttribute("id", Element + "_node");
-    kidLi.textContent = Element;
+    kidLi.setAttribute("id", Element );
+   
     if (list == 'art') {
         var delete_btn = document.createElement('span');
         delete_btn.setAttribute("id", Element + "_delete");
-        delete_btn.setAttribute("class", "float-right");
         delete_btn.innerHTML = "&#10060";
+        delete_btn.setAttribute("class", "float-right");
+        
+        var art = document.createElement('span');
+        art.setAttribute("id",Element + "_node");
+        art.innerHTML= Element;
+
+        kidLi.appendChild(art);
         kidLi.appendChild(delete_btn);
     }
 
-    box.appendChild(kidLi);
+    UL.appendChild(kidLi);
 }
 
 // Interact with artifacts and boxes by clicking
 function clickFunction(listid, boxid, list) {
 
     // Interact with boxes
-    if (list == "box") {
+    if (list === "box") {
         if (targetBox) {
             targetBox.classList.remove("highlight");
         }
@@ -540,7 +553,7 @@ function clickFunction(listid, boxid, list) {
     }
     // Interact with artifacts
     else {
-        var id = event.target.id; 
+        var id = listid; 
 
         if (listid.includes("_node")){
             id = listid.replace("_node", "");
@@ -558,7 +571,11 @@ function clickFunction(listid, boxid, list) {
 
             var deletedLi = document.getElementById(id);
             deletedLi.remove();
-
+            if(id === activeArt){
+                activeArt = null;
+                noArt(false);
+            }
+        
         }
         // Segment artifact
         else if (listid.includes("_segment")) {
@@ -578,24 +595,26 @@ function clickFunction(listid, boxid, list) {
                 body: JSON.stringify(data),
                 headers: { 'Content-Type': 'application/json' }
             })
-                .then(response => response.json())
+                .then(response => {
+                    response.json();
+                    disabler();
+                    fetchArts()})
                 .catch((error) => {
                     console.error('Error:', error);
                 });
-
         }
         // Choose artifact
         else {
-
+            var last_active = document.getElementById(activeArt + "_node");
             if (last_active != document.getElementById(id + "_node") && last_active != document.getElementById(id)) {
-                if (last_active) {
-                    last_active.classList.remove("highlight");
+                if(last_active){
+                    last_active.classList.toggle("highlight"); 
                 }
-                
+                   
                 last_active = document.getElementById(id + "_node");
-                last_active.classList.add("highlight");
-
-                noArt();
+                last_active.classList.toggle("highlight");
+                
+                noArt(true);
 
                 target = id;
 
@@ -608,29 +627,32 @@ function clickFunction(listid, boxid, list) {
 }
 
 // Helping function to remove selection of artifact
-function noArt() {
+function noArt(loader) {
     boxes = [];
     boxTree = [];
 
     document.getElementById("bottom").innerHTML = "";
     document.getElementById("myUL2").innerHTML = "";
     document.getElementById("view").innerHTML = "";
-
-    document.getElementById("loading").style.display = "block";
+    if (loader){
+        document.getElementById("loading").style.display = "block";
+    }
+    
 }
 
 // Make list of artifact out of tree of artifacts
 function list() {
+    
     disabler();
-    treeMaker();
+    tree = treeMaker();
 
     var art_ul = document.getElementById("myUL");
     art_ul.innerHTML = "";
 
-    tree.forEach(node => main_recursion(node, art_ul.id, "art"));
+    tree.forEach(node => mainRecursion(node, art_ul.id, "art"));
 
     art_ul.onclick = function (event) {
-        clickFunction(event.target.id, 0, "art");
+        clickFunction(event.target.id, null, "art");
     };
     var toggler = document.getElementsByClassName("caret");
 
@@ -644,11 +666,17 @@ function list() {
         art_ul.innerHTML = "Empty or wrong repository"
     }
 
+    if(activeArt !== null){
+        const art = document.getElementById(activeArt + "_node");
+        art.classList.toggle("highlight");
+        }
+
 }
 
 // Fetch selected artifact from REST API
 function getArt(target) {
     disabler();
+    boxesId = [];
 
     const artParser = new JsonLdParser();
     artParser
@@ -658,13 +686,6 @@ function getArt(target) {
 
     targetUrl = base + target;
     activeArt = target;
-
-    Arts.forEach(function(art){
-        
-        if(art.id == target && art.parentID != null){
-            targetUrl = base + art.parentID
-        }
-    })
 
     console.log("GET: " + targetUrl);
     fetch(targetUrl, {
@@ -808,7 +829,7 @@ function boxTreeMaker() {
     var result;
 
     boxes.forEach(function (box) {
-        if (box.type == "Box" || box.type == "Border") {
+        if (box.type === "Box" || box.type === "Border" || box.type === "Area") {
             if (box.isChildOf) {
                 if (result = boxTree.find(({ id }) => id === box.isChildOf)) {
                     result.kids.push(box.id);
@@ -834,6 +855,7 @@ function boxTreeMaker() {
             }
         }
     })
+    return boxTree;
 }
 
 // Helping function to make tree out of array of artifacts
@@ -856,6 +878,7 @@ function treeMaker() {
             tree.push(parent);
         }
     }
+    return tree;
 }
 
 // Main function to save all info about selected artifact into object
@@ -866,14 +889,11 @@ function saveArt(data) {
     var lastIndexO = object.lastIndexOf('#') + 1;
     var value = object.substr(lastIndexO, object.lenght);
 
-
-    var subject = data.subject.value;
-    var id = subject.substr(subject.lastIndexOf('/') + 1, subject.lenght);
+    var id = getIDfromIRI(data.subject.value);
 
     if(parentTarget != null){
         id = id.replace(parentTarget,target);
     }
-
 
     var borderS = "";
 
@@ -894,12 +914,18 @@ function saveArt(data) {
         borderS = "right";
     }
 
-    if (value == "Box") {
+    if (value === "Box") {
+        boxesId.push(id);
+    }
+
+    if (value === "Area"){
         boxesId.push(id);
     }
 
     var predicate = data.predicate.value;
     var type = predicate.substr(predicate.lastIndexOf('#') + 1, predicate.lenght);
+
+    console.log(id + " : " + type + " : " + value);
 
     var foundID = false;
 
