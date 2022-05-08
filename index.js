@@ -11,6 +11,7 @@ document.getElementById("repository").value = id;
 document.getElementById("loading").style.display = "block";
 
 // Global variables.
+var areaTree = false;
 var boxesId = [];           // Array of IDs of boxes
 var segmId = [];            // Array of IDs of segments
 var boxes = [];             // Array of boxes
@@ -292,6 +293,11 @@ function getIDfromIRI(iri) {
     return iri.substring(iri.lastIndexOf('/') + 1, iri.lenght);
 }
 
+// Extract type from URL
+function getTypeFromURL(url) {
+        return url.substr(url.lastIndexOf('#') + 1, url.lenght);
+}
+
 // Clean list of artifacts used when changing repository
 function cleanRepo() {
     Arts = [];
@@ -375,49 +381,41 @@ function artifacts(data) {
     document.getElementById("loading").style.display = "none";
 
     if (data != null) {
-        var predicate = data.predicate.value;
-        var subject = data.subject.value;
 
-        var id = getIDfromIRI(subject);
-        // Check if artifact has parent
-        if (predicate.includes("hasParentArtifact")) {
-            var object = data.object.value;
+        var value = getTypeFromURL(data.object.value);
+        var type = getTypeFromURL(data.predicate.value)
+        var id = getIDfromIRI(data.subject.value);
 
-            var parentId = getIDfromIRI(object);
-
-            var found = false;
-            Arts.forEach(function (art) {
-                if (art.id == id) {
-                    found = true;
-                    art.parentID = parentId;
-                }
-            })
-            // Artifact already exists in list
-            if (found == false) {
-                var art = {
-                    id: id,
-                    parentID: parentId
-                }
-                Arts.push(art);
+        //console.log(id + " : " + type + " : " + value);
+        var found = Arts.find(Element => Element.id === id)
+        if (!found) {
+            var art = {
+                id: id,
             }
+            Arts.push(art);
         }
-        // Artifact without parent
-        else {
-            var found = false;
-            Arts.forEach(function (art) {
-                if (art.id == id) {
-                    found = true;
-                }
-            })
-            if (found == false) {
-                var art = {
-                    id: id,
-                    parentID: null,
-                }
+        
+        // Set artifact values
+        switch(type) {
+            case "hasParentArtifact":
+                var parentId = getIDfromIRI(data.object.value);
 
-                Arts.push(art);
-            }
+                found.parentID = parentId;
+            break;
+            case "title":
+    
+                if(value.length > 9){
+                    
+                  value = value.substr(0,9);
+                  value = value + "..."
+                }
+                found.title = value;
+            break;
+            case "type":
+                found.type = value;
         }
+
+       
         lastID = document.getElementById("repository").value;
     }
     else {
@@ -472,8 +470,8 @@ function parent(Element, UL, list) {
     var span = document.createElement('span');
     span.setAttribute("class", "caret");
     span.setAttribute("id", Element.id + "_node");
-    span.textContent = Element.id;
-    li.appendChild(span);
+    
+    
 
     if (list == 'art') {
         var delete_btn = document.createElement('span');
@@ -486,8 +484,13 @@ function parent(Element, UL, list) {
         segment_btn.innerHTML = "SEG";
         li.appendChild(delete_btn);
         li.appendChild(segment_btn);
-
+        span.textContent = Element.title;
     }
+    else{
+        span.textContent = Element.id;
+    }
+
+    li.appendChild(span);
 
     var ul = document.createElement('ul');
     ul.setAttribute("class", "nested");
@@ -511,7 +514,7 @@ function child(Element, UL, list) {
     var kidLi = document.createElement('li');
     kidLi.setAttribute("id", Element );
    
-    if (list == 'art') {
+    if (list === 'art') {
         var delete_btn = document.createElement('span');
         delete_btn.setAttribute("id", Element + "_delete");
         delete_btn.innerHTML = "&#10060";
@@ -519,11 +522,12 @@ function child(Element, UL, list) {
         
         var art = document.createElement('span');
         art.setAttribute("id",Element + "_node");
-        art.innerHTML= Element;
+        art.innerHTML= Element + "_segm";
 
         kidLi.appendChild(art);
         kidLi.appendChild(delete_btn);
     }
+    else art.innerHTML= Element;
 
     UL.appendChild(kidLi);
 }
@@ -618,7 +622,7 @@ function clickFunction(listid, boxid, list) {
 
                 target = id;
 
-                parentTarget = Arts.find(({id}) => id === target).parentID;
+                parentTarget = "";
 
                 getArt(id);
             }
@@ -675,6 +679,10 @@ function list() {
 
 // Fetch selected artifact from REST API
 function getArt(target) {
+
+    var Artifact = Arts.find(element => element.id === target);
+    console.log(Artifact);
+    
     disabler();
     boxesId = [];
 
@@ -865,6 +873,7 @@ function treeMaker() {
 
         if (!Arts[i].parentID) {
             var parent = {
+                title: Arts[i].title,
                 id: Arts[i].id,
                 kids: []
             }
@@ -890,10 +899,6 @@ function saveArt(data) {
     var value = object.substr(lastIndexO, object.lenght);
 
     var id = getIDfromIRI(data.subject.value);
-
-    if(parentTarget != null){
-        id = id.replace(parentTarget,target);
-    }
 
     var borderS = "";
 
@@ -922,14 +927,17 @@ function saveArt(data) {
         boxesId.push(id);
     }
 
-    var predicate = data.predicate.value;
-    var type = predicate.substr(predicate.lastIndexOf('#') + 1, predicate.lenght);
+    var type = getTypeFromURL(data.predicate.value);
 
-    console.log(id + " : " + type + " : " + value);
+    if(type === "hasSourcePage"){
+        parentTarget = value;
+    }
+
+    if(type === "type" && value === "AreaTree"){
+        areaTree = true;
+    }
 
     var foundID = false;
-
-    if (type === "pngImage") pageImg = object.value;
 
     for (var i = 0; i < boxes.length; i++) {
         // Box already exists in array
